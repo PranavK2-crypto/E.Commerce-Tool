@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Watermark · ImageTools</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js">
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        /* ===== Reset & Base ===== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --primary: #1A2A3A;
+            --primary-light: #2C3E50;
+            --accent: #00B894;
+            --accent-hover: #00A381;
+            --accent-light: #E6F9F4;
+            --bg: #F5F7FA;
+            --white: #FFFFFF;
+            --gray-100: #F0F2F5;
+            --gray-200: #E2E6ED;
+            --gray-300: #C8CDD8;
+            --gray-400: #A8AEB8;
+            --gray-500: #7A8290;
+            --gray-600: #4A5260;
+            --gray-700: #2D3645;
+            --gray-800: #1A2A3A;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.12);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-full: 9999px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--gray-800);
+            padding: 24px 20px 40px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .app-wrapper {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        /* ===== Header ===== */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding: 18px 28px;
+            background: var(--primary);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .app-header:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .app-header .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .app-header .logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .app-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-header h1 .highlight {
+            color: var(--accent);
+        }
+
+        .app-header h1 .tool-badge {
+            font-weight: 400;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 2px 14px;
+            border-radius: var(--radius-full);
+            letter-spacing: 0;
+            font-weight: 500;
+        }
+
+        .app-header .badge-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header-badge {
+            background: rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .header-badge i {
+            font-size: 12px;
+            color: var(--accent);
+        }
+
+        .header-badge.private {
+            background: rgba(0, 184, 148, 0.15);
+            color: var(--accent);
+            border-color: rgba(0, 184, 148, 0.15);
+        }
+
+        .header-badge.private i {
+            color: var(--accent);
+        }
+
+        /* ===== Main Grid ===== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 920px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+
+        /* ===== Panels ===== */
+        .panel {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 24px 26px 28px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            transition: box-shadow var(--transition);
+        }
+
+        .panel:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+        }
+
+        .panel-title i {
+            font-size: 18px;
+            color: var(--accent);
+            width: 24px;
+            text-align: center;
+        }
+
+        .panel-title .badge-count {
+            background: var(--accent-light);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 700;
+            padding: 0 14px;
+            border-radius: var(--radius-full);
+            line-height: 26px;
+            margin-left: auto;
+        }
+
+        /* ===== Upload Zone ===== */
+        .upload-zone {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-sm);
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: var(--gray-100);
+            position: relative;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            transform: scale(1.01);
+        }
+
+        .upload-zone .icon {
+            font-size: 36px;
+            margin-bottom: 6px;
+            display: block;
+            color: var(--gray-400);
+            transition: color var(--transition);
+        }
+
+        .upload-zone:hover .icon {
+            color: var(--accent);
+        }
+
+        .upload-zone .label {
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 15px;
+        }
+
+        .upload-zone .label strong {
+            color: var(--accent);
+        }
+
+        .upload-zone .hint {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-zone.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* ===== File Tags ===== */
+        .file-list {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 4px 2px;
+        }
+
+        .file-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .file-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .file-list::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 10px;
+        }
+
+        .file-tag {
+            background: var(--gray-100);
+            padding: 4px 14px 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gray-700);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .file-tag .remove {
+            cursor: pointer;
+            color: var(--gray-400);
+            font-weight: 700;
+            font-size: 15px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .file-tag .remove:hover {
+            color: #dc2626;
+        }
+
+        .upload-status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--gray-600);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .upload-status .count {
+            background: var(--accent-light);
+            color: var(--accent);
+            padding: 0 14px;
+            border-radius: var(--radius-full);
+            line-height: 28px;
+            font-weight: 700;
+        }
+
+        /* ===== Controls ===== */
+        .control-group {
+            margin-top: 18px;
+        }
+
+        .control-group:first-of-type {
+            margin-top: 0;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 4px;
+        }
+
+        .control-label .value {
+            font-weight: 700;
+            color: var(--accent);
+            background: var(--accent-light);
+            padding: 0 12px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            line-height: 26px;
+            min-width: 44px;
+            text-align: center;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 5px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gray-200);
+            border-radius: 10px;
+            outline: none;
+            margin: 6px 0 2px;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 184, 148, 0.25);
+            transition: transform 0.15s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        input[type="range"]:disabled::-webkit-slider-thumb {
+            background: var(--gray-400);
+            cursor: not-allowed;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 184, 148, 0.25);
+        }
+
+        select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--gray-200);
+            background: var(--white);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-700);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            font-family: var(--font);
+        }
+
+        select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.12);
+        }
+
+        /* ===== Watermark Upload Mini ===== */
+        .watermark-upload-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 2px;
+        }
+
+        .watermark-upload-row .upload-zone-mini {
+            flex: 1;
+            min-width: 140px;
+            border: 1.5px dashed var(--gray-300);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            background: var(--gray-100);
+            transition: border-color 0.2s, background 0.2s;
+            font-size: 13px;
+            color: var(--gray-700);
+        }
+
+        .watermark-upload-row .upload-zone-mini:hover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .watermark-upload-row .upload-zone-mini input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .watermark-upload-row .upload-zone-mini.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .watermark-upload-row .upload-zone-mini .icon-sm {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 2px;
+            color: var(--gray-400);
+        }
+
+        .watermark-upload-row .upload-zone-mini:hover .icon-sm {
+            color: var(--accent);
+        }
+
+        .watermark-status {
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .watermark-status .empty {
+            color: var(--gray-400);
+            font-weight: 400;
+        }
+
+        .watermark-optional-hint {
+            font-size: 12px;
+            color: var(--gray-400);
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        /* ===== Buttons ===== */
+        .btn-primary {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: 0 4px 16px rgba(0, 184, 148, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-family: var(--font);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0, 184, 148, 0.35);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .btn-primary i {
+            font-size: 18px;
+        }
+
+        /* ===== Progress ===== */
+        .progress-wrap {
+            margin-top: 14px;
+            display: none;
+        }
+
+        .progress-wrap.visible {
+            display: block;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            border-radius: 10px;
+            transition: width 0.25s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-600);
+            margin-top: 6px;
+        }
+
+        .progress-text .status-msg {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ===== Live Preview ===== */
+        .live-preview-container {
+            position: relative;
+            background: var(--gray-100);
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--gray-200);
+            overflow: hidden;
+            margin-bottom: 14px;
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .live-preview-container canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+            background: #ffffff;
+        }
+
+        .live-preview-container .placeholder {
+            color: var(--gray-400);
+            font-size: 14px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .live-preview-container .placeholder .big-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+            color: var(--gray-300);
+        }
+
+        .live-preview-label {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(26, 42, 58, 0.8);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 14px;
+            border-radius: var(--radius-full);
+            backdrop-filter: blur(6px);
+            letter-spacing: 0.3px;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .live-preview-label i {
+            font-size: 8px;
+            color: var(--accent);
+        }
+
+        /* ===== Thumbnail Grid ===== */
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 2px 0;
+        }
+
+        .preview-grid::-webkit-scrollbar {
+            width: 4px;
+        }
+        .preview-grid::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .preview-grid::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 10px;
+        }
+
+        .preview-item {
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 2px solid var(--gray-200);
+            background: var(--white);
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all var(--transition);
+            cursor: pointer;
+        }
+
+        .preview-item:hover {
+            border-color: var(--accent);
+            transform: scale(1.04);
+        }
+
+        .preview-item.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.2);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .preview-item .badge-idx {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(26, 42, 58, 0.8);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 0 8px;
+            border-radius: var(--radius-full);
+            line-height: 20px;
+            backdrop-filter: blur(4px);
+        }
+
+        .preview-empty {
+            color: var(--gray-400);
+            font-size: 14px;
+            text-align: center;
+            padding: 40px 10px;
+            grid-column: 1 / -1;
+        }
+
+        .preview-empty .big-icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 8px;
+            color: var(--gray-300);
+        }
+
+        /* ===== Watermark Preview Row ===== */
+        .wm-preview-row {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            align-items: center;
+        }
+
+        .wm-preview-box {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--gray-200);
+            background: var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            font-size: 12px;
+            color: var(--gray-400);
+        }
+
+        .wm-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .wm-preview-box .placeholder {
+            font-size: 20px;
+            opacity: 0.4;
+            color: var(--gray-400);
+        }
+
+        .wm-info {
+            font-size: 13px;
+            color: var(--gray-600);
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .wm-info strong {
+            color: var(--gray-800);
+            font-weight: 600;
+        }
+
+        .wm-info .optional-tag {
+            background: var(--gray-100);
+            color: var(--gray-500);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 1px 10px;
+            border-radius: var(--radius-full);
+            margin-left: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* ===== Format Selector ===== */
+        .format-selector {
+            margin-top: 6px;
+        }
+
+        .format-selector select {
+            background: var(--white);
+        }
+
+        /* ===== Footer ===== */
+        .footer-note {
+            margin-top: 28px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--gray-400);
+            border-top: 1px solid var(--gray-200);
+            padding-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-note i {
+            color: var(--accent);
+            margin-right: 4px;
+        }
+
+        .footer-note .sep {
+            color: var(--gray-300);
+        }
+
+        .footer-note .heart {
+            color: #ef4444;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 14px 30px;
+            }
+
+            .app-header {
+                padding: 14px 18px;
+            }
+
+            .app-header h1 {
+                font-size: 18px;
+            }
+
+            .app-header .logo-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+
+            .app-header h1 .tool-badge {
+                font-size: 11px;
+                padding: 1px 12px;
+            }
+
+            .header-badge {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+
+            .panel {
+                padding: 18px 16px 22px;
+            }
+
+            .btn-primary {
+                font-size: 15px;
+                padding: 14px 16px;
+            }
+
+            .preview-grid {
+                grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+                max-height: 180px;
+            }
+
+            .watermark-upload-row {
+                flex-direction: column;
+            }
+
+            .watermark-upload-row .upload-zone-mini {
+                width: 100%;
+            }
+
+            .live-preview-container {
+                aspect-ratio: 1/1;
+            }
+
+            .footer-note {
+                font-size: 12px;
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-header h1 {
+                font-size: 16px;
+            }
+
+            .app-header .logo-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+            }
+
+            .panel {
+                padding: 14px 12px 18px;
+            }
+
+            .upload-zone {
+                padding: 24px 16px;
+            }
+
+            .upload-zone .icon {
+                font-size: 28px;
+            }
+
+            .preview-grid {
+                grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+                gap: 6px;
+            }
+
+            .wm-preview-row {
+                gap: 12px;
+            }
+
+            .wm-preview-box {
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* ===== Utility ===== */
+        .text-muted {
+            color: var(--gray-500);
+        }
+
+        .text-sm {
+            font-size: 13px;
+        }
+
+        .flex-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mt-2 {
+            margin-top: 8px;
+        }
+
+        .gap-2 {
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- ===== HEADER ===== -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fas fa-water"></i></div>
+                <h1>
+                    Image <span class="highlight">Watermark</span>
+                    <span class="tool-badge">3000×3000</span>
+                </h1>
+            </div>
+            <div class="badge-group">
+                <span class="header-badge"><i class="fas fa-bolt"></i> Batch</span>
+                <span class="header-badge private"><i class="fas fa-lock"></i> 100% Local</span>
+                <span class="header-badge"><i class="fas fa-layer-group"></i> Full + Corner</span>
+            </div>
+        </header>
+
+        <!-- ===== MAIN GRID ===== -->
+        <div class="main-grid">
+
+            <!-- ===== LEFT PANEL: Controls ===== -->
+            <div class="panel">
+
+                <div class="panel-title">
+                    <i class="fas fa-images"></i> Main Images
+                    <span class="badge-count" id="imageCountBadge">0</span>
+                </div>
+
+                <div class="upload-zone" id="imageUploadZone">
+                    <span class="icon"><i class="fas fa-cloud-upload-alt"></i></span>
+                    <div class="label">Drop images here or <strong>browse</strong></div>
+                    <div class="hint">JPG, PNG, WebP &bull; Batch upload</div>
+                    <input type="file" id="imageInput" accept="image/*" multiple />
+                </div>
+
+                <div class="file-list" id="imageFileList"></div>
+
+                <div class="upload-status">
+                    <span><i class="fas fa-paperclip"></i> Uploaded</span>
+                    <span class="count" id="imageCountDisplay">0</span>
+                    <span style="color:var(--gray-500);font-weight:400;">images</span>
+                </div>
+
+                <!-- Padding -->
+                <div class="control-group">
+                    <div class="control-label">
+                        <span><i class="fas fa-expand" style="color:var(--accent);width:18px;"></i> White Padding</span>
+                        <span class="value" id="paddingValue">4%</span>
+                    </div>
+                    <input type="range" id="paddingSlider" min="0" max="40" value="4" step="1" />
+                </div>
+
+                <!-- Full-Screen Watermark -->
+                <div class="control-group">
+                    <div class="panel-title" style="margin-bottom:10px;font-size:14px;font-weight:600;">
+                        <i class="fas fa-vector-square" style="color:var(--accent);"></i> Full-Screen Watermark
+                        <span style="font-size:11px;font-weight:400;color:var(--gray-400);margin-left:auto;">optional</span>
+                    </div>
+                    <div class="watermark-upload-row">
+                        <div class="upload-zone-mini" id="fullWmZone">
+                            <span class="icon-sm"><i class="fas fa-file-image"></i></span>
+                            Upload PNG
+                            <input type="file" id="fullWmInput" accept="image/png" />
+                        </div>
+                        <div class="watermark-status" id="fullWmStatus">
+                            <span class="empty">No file selected</span>
+                        </div>
+                    </div>
+                    <div class="control-label" style="margin-top:12px;">
+                        <span><i class="fas fa-eye" style="color:var(--accent);width:18px;"></i> Opacity</span>
+                        <span class="value" id="opacityValue">4%</span>
+                    </div>
+                    <input type="range" id="opacitySlider" min="0" max="100" value="4" step="1" />
+                </div>
+
+                <!-- Corner Watermark -->
+                <div class="control-group">
+                    <div class="panel-title" style="margin-bottom:10px;font-size:14px;font-weight:600;">
+                        <i class="fas fa-thumbtack" style="color:var(--accent);"></i> Corner Watermark
+                        <span style="font-size:11px;font-weight:400;color:var(--gray-400);margin-left:auto;">optional</span>
+                    </div>
+                    <div class="watermark-upload-row">
+                        <div class="upload-zone-mini" id="cornerWmZone">
+                            <span class="icon-sm"><i class="fas fa-file-image"></i></span>
+                            Upload PNG
+                            <input type="file" id="cornerWmInput" accept="image/png" />
+                        </div>
+                        <div class="watermark-status" id="cornerWmStatus">
+                            <span class="empty">No file selected</span>
+                        </div>
+                    </div>
+                    <div class="control-label" style="margin-top:12px;">
+                        <span><i class="fas fa-arrows-alt-h" style="color:var(--accent);width:18px;"></i> Size</span>
+                        <span class="value" id="cornerSizeValue">26%</span>
+                    </div>
+                    <input type="range" id="cornerSizeSlider" min="5" max="40" value="26" step="1" />
+                    <div class="control-label" style="margin-top:12px;">
+                        <span><i class="fas fa-crosshairs" style="color:var(--accent);width:18px;"></i> Position</span>
+                    </div>
+                    <select id="cornerPosition">
+                        <option value="top-left">Top Left</option>
+                        <option value="top-right">Top Right</option>
+                        <option value="bottom-left">Bottom Left</option>
+                        <option value="bottom-right" selected>Bottom Right</option>
+                    </select>
+                    <div class="watermark-optional-hint">
+                        <i class="fas fa-info-circle"></i> Use one or both watermarks — or none (just padding).
+                    </div>
+                </div>
+
+                <!-- Output Format -->
+                <div class="control-group format-selector">
+                    <div class="control-label">
+                        <span><i class="fas fa-file-export" style="color:var(--accent);width:18px;"></i> Output Format</span>
+                    </div>
+                    <select id="outputFormat">
+                        <option value="image/png">PNG (lossless)</option>
+                        <option value="image/jpeg">JPEG</option>
+                        <option value="image/webp">WebP</option>
+                        <option value="image/bmp">BMP</option>
+                    </select>
+                    <div style="font-size:12px;color:var(--gray-400);margin-top:4px;">
+                        <i class="fas fa-chart-line"></i> JPEG/WebP use fixed 92% quality &bull; BMP is lossless
+                    </div>
+                </div>
+
+                <!-- Process Button -->
+                <div class="process-area" style="margin-top:22px;display:flex;flex-direction:column;gap:12px;">
+                    <button class="btn-primary" id="processBtn">
+                        <i class="fas fa-play"></i> Process &amp; Download Images
+                    </button>
+                    <div class="progress-wrap" id="progressWrap">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="progressPercent">0%</span>
+                            <span class="status-msg" id="progressStatus">Ready</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ===== RIGHT PANEL: Preview ===== -->
+            <div class="panel">
+
+                <div class="panel-title">
+                    <i class="fas fa-eye"></i> Live Preview
+                    <span class="badge-count" id="previewCount">0</span>
+                </div>
+
+                <div class="live-preview-container" id="livePreviewContainer">
+                    <canvas id="livePreviewCanvas"></canvas>
+                    <div class="live-preview-label">
+                        <i class="fas fa-circle"></i> LIVE
+                    </div>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;margin-bottom:6px;">
+                    <span style="font-size:13px;font-weight:600;color:var(--gray-700);">
+                        <i class="fas fa-th" style="color:var(--accent);"></i> Uploaded Images
+                    </span>
+                    <span style="font-size:12px;color:var(--gray-400);" id="clickHint">
+                        <i class="fas fa-mouse-pointer"></i> click a thumbnail
+                    </span>
+                </div>
+
+                <div class="preview-grid" id="previewGrid">
+                    <div class="preview-empty">
+                        <span class="big-icon"><i class="fas fa-image"></i></span>
+                        Upload images to see previews
+                    </div>
+                </div>
+
+                <!-- Watermark Assets -->
+                <div style="margin-top:18px;padding-top:16px;border-top:1.5px solid var(--gray-200);">
+                    <div style="font-size:14px;font-weight:600;color:var(--gray-700);margin-bottom:8px;">
+                        <i class="fas fa-stamp" style="color:var(--accent);"></i> Watermark Assets
+                    </div>
+                    <div class="wm-preview-row">
+                        <div class="wm-preview-box" id="fullWmPreview">
+                            <span class="placeholder"><i class="fas fa-vector-square"></i></span>
+                        </div>
+                        <div class="wm-info">
+                            <strong>Full-screen</strong>
+                            <span class="optional-tag">optional</span>
+                            <span id="fullWmInfo" class="text-muted text-sm" style="display:block;margin-top:2px;">not set</span>
+                        </div>
+                    </div>
+                    <div class="wm-preview-row">
+                        <div class="wm-preview-box" id="cornerWmPreview">
+                            <span class="placeholder"><i class="fas fa-thumbtack"></i></span>
+                        </div>
+                        <div class="wm-info">
+                            <strong>Corner</strong>
+                            <span class="optional-tag">optional</span>
+                            <span id="cornerWmInfo" class="text-muted text-sm" style="display:block;margin-top:2px;">not set</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meta info -->
+                <div style="margin-top:16px;padding-top:14px;border-top:1.5px solid var(--gray-200);font-size:13px;color:var(--gray-500);display:flex;gap:18px;flex-wrap:wrap;">
+                    <span><i class="fas fa-arrows-alt" style="color:var(--accent);"></i> Output: <strong style="color:var(--gray-700);">3000×3000</strong> px</span>
+                    <span><i class="fas fa-file" style="color:var(--accent);"></i> Format: <strong style="color:var(--gray-700);" id="formatDisplayLabel">PNG</strong></span>
+                    <span><i class="fas fa-layer-group" style="color:var(--accent);"></i> Batch processing</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <div class="footer-note">
+            <span><i class="fas fa-shield-alt"></i> All processing runs locally in your browser</span>
+            <span class="sep">|</span>
+            <span><i class="fas fa-upload" style="color:var(--accent);"></i> No uploads to any server</span>
+            <span class="sep">|</span>
+            <span><i class="fas fa-infinity"></i> Unlimited use · 100% free</span>
+            <span class="sep">|</span>
+            <span><i class="fas fa-heart heart"></i></span>
+        </div>
+
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ---- DOM refs ----
+            const imageInput = document.getElementById('imageInput');
+            const imageUploadZone = document.getElementById('imageUploadZone');
+            const imageFileList = document.getElementById('imageFileList');
+            const imageCountBadge = document.getElementById('imageCountBadge');
+            const imageCountDisplay = document.getElementById('imageCountDisplay');
+            const previewGrid = document.getElementById('previewGrid');
+            const previewCount = document.getElementById('previewCount');
+            const clickHint = document.getElementById('clickHint');
+
+            const paddingSlider = document.getElementById('paddingSlider');
+            const paddingValue = document.getElementById('paddingValue');
+            const opacitySlider = document.getElementById('opacitySlider');
+            const opacityValue = document.getElementById('opacityValue');
+            const cornerSizeSlider = document.getElementById('cornerSizeSlider');
+            const cornerSizeValue = document.getElementById('cornerSizeValue');
+            const cornerPosition = document.getElementById('cornerPosition');
+
+            const fullWmInput = document.getElementById('fullWmInput');
+            const fullWmZone = document.getElementById('fullWmZone');
+            const fullWmStatus = document.getElementById('fullWmStatus');
+            const fullWmPreview = document.getElementById('fullWmPreview');
+            const fullWmInfo = document.getElementById('fullWmInfo');
+
+            const cornerWmInput = document.getElementById('cornerWmInput');
+            const cornerWmZone = document.getElementById('cornerWmZone');
+            const cornerWmStatus = document.getElementById('cornerWmStatus');
+            const cornerWmPreview = document.getElementById('cornerWmPreview');
+            const cornerWmInfo = document.getElementById('cornerWmInfo');
+
+            const processBtn = document.getElementById('processBtn');
+            const progressWrap = document.getElementById('progressWrap');
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressStatus = document.getElementById('progressStatus');
+
+            const liveCanvas = document.getElementById('livePreviewCanvas');
+            const outputFormatSelect = document.getElementById('outputFormat');
+            const formatDisplayLabel = document.getElementById('formatDisplayLabel');
+
+            // ---- All controls to disable during processing ----
+            const allControls = [
+                paddingSlider, opacitySlider, cornerSizeSlider, cornerPosition,
+                fullWmInput, fullWmZone, cornerWmInput, cornerWmZone,
+                imageInput, imageUploadZone, outputFormatSelect
+            ];
+
+            // ---- State ----
+            const state = {
+                images: [],
+                fullWatermark: null,
+                cornerWatermark: null,
+                processedBlobs: [],
+                isProcessing: false,
+                isDownloading: false,
+                previewIndex: 0,
+            };
+
+            const PREVIEW_SIZE = 500;
+            const OUTPUT_SIZE = 3000;
+            const FIXED_QUALITY = 0.92;
+
+            // ---- Helpers ----
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / 1048576).toFixed(1) + ' MB';
+            }
+
+            function getBaseName(filename) {
+                const i = filename.lastIndexOf('.');
+                return i > 0 ? filename.slice(0, i) : filename;
+            }
+
+            function loadImageFromDataUrl(dataUrl) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = function() {
+                        resolve({ dataUrl, width: this.width, height: this.height, img: this });
+                    };
+                    img.onerror = reject;
+                    img.src = dataUrl;
+                });
+            }
+
+            function updateFormatUI() {
+                const val = outputFormatSelect.value;
+                const map = {
+                    'image/png': 'PNG',
+                    'image/jpeg': 'JPEG',
+                    'image/webp': 'WebP',
+                    'image/bmp': 'BMP'
+                };
+                formatDisplayLabel.textContent = map[val] || 'PNG';
+            }
+
+            // ---- Enable / disable controls ----
+            function setControlsEnabled(enabled) {
+                const disabled = !enabled;
+                allControls.forEach(function(el) {
+                    if (!el) return;
+                    if (el.tagName === 'INPUT' && el.type === 'file') return;
+                    if (el.tagName === 'INPUT' && el.type === 'range') { el.disabled = disabled; return; }
+                    if (el.tagName === 'SELECT') { el.disabled = disabled; return; }
+                    if (el.classList && el.classList.contains('upload-zone-mini')) {
+                        el.classList.toggle('disabled', disabled);
+                        return;
+                    }
+                    if (el.classList && el.classList.contains('upload-zone')) {
+                        el.classList.toggle('disabled', disabled);
+                        return;
+                    }
+                });
+                [imageInput, fullWmInput, cornerWmInput].forEach(function(inp) {
+                    if (inp) inp.disabled = disabled;
+                });
+            }
+
+            // ---- Core processing ----
+            function processImageOnCanvas(
+                img,
+                paddingPercent,
+                opacityPercent,
+                cornerSizePercent,
+                position,
+                fullWmImg,
+                cornerWmImg,
+                targetSize
+            ) {
+                const canvas = document.createElement('canvas');
+                canvas.width = targetSize;
+                canvas.height = targetSize;
+                const ctx = canvas.getContext('2d');
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, targetSize, targetSize);
+
+                const paddingPx = (paddingPercent / 100) * targetSize;
+                const available = targetSize - 2 * paddingPx;
+
+                const imgAspect = img.width / img.height;
+                let drawW, drawH, offsetX, offsetY;
+                if (imgAspect > 1) {
+                    drawW = available;
+                    drawH = available / imgAspect;
+                } else {
+                    drawH = available;
+                    drawW = available * imgAspect;
+                }
+                offsetX = (targetSize - drawW) / 2;
+                offsetY = (targetSize - drawH) / 2;
+
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+
+                if (fullWmImg) {
+                    const fullOpacity = opacityPercent / 100;
+                    if (fullOpacity > 0) {
+                        ctx.globalAlpha = fullOpacity;
+                        ctx.drawImage(fullWmImg, 0, 0, targetSize, targetSize);
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+
+                if (cornerWmImg) {
+                    const cornerSizePx = (cornerSizePercent / 100) * targetSize;
+                    const cAspect = cornerWmImg.width / cornerWmImg.height;
+                    let cW, cH;
+                    if (cAspect > 1) {
+                        cW = cornerSizePx;
+                        cH = cornerSizePx / cAspect;
+                    } else {
+                        cH = cornerSizePx;
+                        cW = cornerSizePx * cAspect;
+                    }
+
+                    const margin = paddingPx * 0.5 + 8;
+                    let cx, cy;
+                    switch (position) {
+                        case 'top-left':
+                            cx = margin;
+                            cy = margin;
+                            break;
+                        case 'top-right':
+                            cx = targetSize - cW - margin;
+                            cy = margin;
+                            break;
+                        case 'bottom-left':
+                            cx = margin;
+                            cy = targetSize - cH - margin;
+                            break;
+                        case 'bottom-right':
+                        default:
+                            cx = targetSize - cW - margin;
+                            cy = targetSize - cH - margin;
+                            break;
+                    }
+
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(cornerWmImg, cx, cy, cW, cH);
+                }
+
+                return canvas;
+            }
+
+            // ---- Render live preview ----
+            async function renderLivePreview() {
+                const container = liveCanvas.parentElement;
+                const rect = container.getBoundingClientRect();
+                let size = Math.min(rect.width || 400, rect.height || 400);
+                if (size < 100) size = 400;
+                const canvasSize = Math.min(size, PREVIEW_SIZE);
+                liveCanvas.width = canvasSize;
+                liveCanvas.height = canvasSize;
+                const ctx = liveCanvas.getContext('2d');
+
+                if (state.images.length === 0) {
+                    ctx.fillStyle = '#fafcff';
+                    ctx.fillRect(0, 0, canvasSize, canvasSize);
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '16px "Inter", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('📤 Upload images', canvasSize / 2, canvasSize / 2 - 8);
+                    ctx.font = '13px "Inter", sans-serif';
+                    ctx.fillStyle = '#b8c4d8';
+                    ctx.fillText('live preview will appear here', canvasSize / 2, canvasSize / 2 + 24);
+                    return;
+                }
+
+                const idx = Math.min(state.previewIndex, state.images.length - 1);
+                const item = state.images[idx];
+                if (!item) return;
+
+                try {
+                    const imgData = await loadImageFromDataUrl(item.dataUrl);
+                    let fullImg = null;
+                    let cornerImg = null;
+                    if (state.fullWatermark) {
+                        const d = await loadImageFromDataUrl(state.fullWatermark.dataUrl);
+                        fullImg = d.img;
+                    }
+                    if (state.cornerWatermark) {
+                        const d = await loadImageFromDataUrl(state.cornerWatermark.dataUrl);
+                        cornerImg = d.img;
+                    }
+
+                    const padding = parseInt(paddingSlider.value, 10);
+                    const opacity = parseInt(opacitySlider.value, 10);
+                    const cornerSize = parseInt(cornerSizeSlider.value, 10);
+                    const position = cornerPosition.value;
+
+                    const resultCanvas = processImageOnCanvas(
+                        imgData.img,
+                        padding,
+                        opacity,
+                        cornerSize,
+                        position,
+                        fullImg,
+                        cornerImg,
+                        canvasSize
+                    );
+                    ctx.clearRect(0, 0, canvasSize, canvasSize);
+                    ctx.drawImage(resultCanvas, 0, 0);
+                } catch (err) {
+                    console.warn('Live preview error:', err);
+                    ctx.fillStyle = '#fef2f2';
+                    ctx.fillRect(0, 0, canvasSize, canvasSize);
+                    ctx.fillStyle = '#dc2626';
+                    ctx.font = '14px "Inter", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('⚠️ Preview error', canvasSize / 2, canvasSize / 2);
+                }
+            }
+
+            // ---- Render thumbnails ----
+            function renderPreviews() {
+                const grid = previewGrid;
+                grid.innerHTML = '';
+                if (state.images.length === 0) {
+                    grid.innerHTML = `
+                        <div class="preview-empty">
+                            <span class="big-icon"><i class="fas fa-image"></i></span>
+                            Upload images to see previews
+                        </div>
+                    `;
+                    previewCount.textContent = '0';
+                    clickHint.textContent = 'upload images first';
+                    return;
+                }
+                state.images.forEach(function(item, idx) {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item' + (idx === state.previewIndex ? ' active' : '');
+                    div.dataset.index = idx;
+                    const img = document.createElement('img');
+                    img.src = item.dataUrl;
+                    img.alt = item.name;
+                    const badge = document.createElement('span');
+                    badge.className = 'badge-idx';
+                    badge.textContent = idx + 1;
+                    div.appendChild(img);
+                    div.appendChild(badge);
+                    div.addEventListener('click', function() {
+                        if (state.isProcessing || state.isDownloading) return;
+                        state.previewIndex = idx;
+                        grid.querySelectorAll('.preview-item').forEach(el => el.classList.remove('active'));
+                        div.classList.add('active');
+                        renderLivePreview();
+                    });
+                    grid.appendChild(div);
+                });
+                previewCount.textContent = state.images.length;
+                clickHint.textContent = 'click a thumbnail to preview';
+            }
+
+            function renderFileTags() {
+                const container = imageFileList;
+                container.innerHTML = '';
+                state.images.forEach(function(item, idx) {
+                    const tag = document.createElement('span');
+                    tag.className = 'file-tag';
+                    tag.innerHTML = `
+                        <i class="fas fa-file-image" style="color:var(--accent);"></i>
+                        ${item.name} (${formatFileSize(item.file.size)})
+                        <span class="remove" data-index="${idx}">✕</span>
+                    `;
+                    container.appendChild(tag);
+                });
+                container.querySelectorAll('.remove').forEach(function(el) {
+                    el.addEventListener('click', function(e) {
+                        if (state.isProcessing || state.isDownloading) return;
+                        const idx = parseInt(e.target.dataset.index, 10);
+                        state.images.splice(idx, 1);
+                        if (state.previewIndex >= state.images.length) {
+                            state.previewIndex = Math.max(0, state.images.length - 1);
+                        }
+                        updateCountsAndRender();
+                    });
+                });
+            }
+
+            function updateCountsAndRender() {
+                const count = state.images.length;
+                imageCountBadge.textContent = count;
+                imageCountDisplay.textContent = count;
+                renderFileTags();
+                renderPreviews();
+                state.processedBlobs = [];
+                updateProcessButton();
+                renderLivePreview();
+            }
+
+            // ---- Watermark UI ----
+            function updateWatermarkUI(type) {
+                if (type === 'full') {
+                    const wm = state.fullWatermark;
+                    if (wm) {
+                        fullWmStatus.innerHTML = '✅ ' + wm.name + ' (' + wm.width + '×' + wm.height + ')';
+                        fullWmPreview.innerHTML = '<img src="' + wm.dataUrl + '" alt="full watermark" />';
+                        fullWmInfo.textContent = wm.width + '×' + wm.height + ' · ' + formatFileSize(wm.fileSize || 0);
+                    } else {
+                        fullWmStatus.innerHTML = '<span class="empty">No file selected (optional)</span>';
+                        fullWmPreview.innerHTML = '<span class="placeholder"><i class="fas fa-vector-square"></i></span>';
+                        fullWmInfo.textContent = 'not set · optional';
+                    }
+                } else if (type === 'corner') {
+                    const wm = state.cornerWatermark;
+                    if (wm) {
+                        cornerWmStatus.innerHTML = '✅ ' + wm.name + ' (' + wm.width + '×' + wm.height + ')';
+                        cornerWmPreview.innerHTML = '<img src="' + wm.dataUrl + '" alt="corner watermark" />';
+                        cornerWmInfo.textContent = wm.width + '×' + wm.height + ' · ' + formatFileSize(wm.fileSize || 0);
+                    } else {
+                        cornerWmStatus.innerHTML = '<span class="empty">No file selected (optional)</span>';
+                        cornerWmPreview.innerHTML = '<span class="placeholder"><i class="fas fa-thumbtack"></i></span>';
+                        cornerWmInfo.textContent = 'not set · optional';
+                    }
+                }
+            }
+
+            function handleWatermarkUpload(file, type) {
+                if (state.isProcessing || state.isDownloading) {
+                    alert('Please wait for current operation to finish.');
+                    return;
+                }
+                if (!file) return;
+                if (file.type !== 'image/png' && !file.name.toLowerCase().endsWith('.png')) {
+                    alert('Please upload a PNG file for the watermark (transparency is supported).');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    const img = new Image();
+                    img.onload = function() {
+                        const entry = {
+                            dataUrl: dataUrl,
+                            width: this.width,
+                            height: this.height,
+                            name: file.name,
+                            fileSize: file.size,
+                        };
+                        if (type === 'full') {
+                            state.fullWatermark = entry;
+                            updateWatermarkUI('full');
+                        } else {
+                            state.cornerWatermark = entry;
+                            updateWatermarkUI('corner');
+                        }
+                        state.processedBlobs = [];
+                        updateProcessButton();
+                        renderLivePreview();
+                    };
+                    img.onerror = function() {
+                        alert('Failed to load watermark image. Please try another PNG file.');
+                    };
+                    img.src = dataUrl;
+                };
+                reader.onerror = function() {
+                    alert('Failed to read file.');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // ---- Process images ----
+            async function processImages() {
+                if (state.isProcessing || state.isDownloading) return;
+                if (state.images.length === 0) {
+                    alert('Please upload at least one image.');
+                    return;
+                }
+
+                const hasFull = !!state.fullWatermark;
+                const hasCorner = !!state.cornerWatermark;
+                if (!hasFull && !hasCorner) {
+                    if (!confirm('No watermarks added. Proceed with just padding and export?')) {
+                        return;
+                    }
+                }
+
+                state.isProcessing = true;
+                processBtn.disabled = true;
+                processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                setControlsEnabled(false);
+
+                progressWrap.classList.add('visible');
+                progressFill.style.width = '0%';
+                progressPercent.textContent = '0%';
+                progressStatus.textContent = 'Preparing...';
+
+                const paddingPercent = parseInt(paddingSlider.value, 10);
+                const opacityPercent = parseInt(opacitySlider.value, 10);
+                const cornerSizePercent = parseInt(cornerSizeSlider.value, 10);
+                const position = cornerPosition.value;
+
+                const format = outputFormatSelect.value;
+                let ext = 'png';
+                let mimeType = 'image/png';
+                let quality = undefined;
+                if (format === 'image/jpeg') {
+                    ext = 'jpg';
+                    mimeType = 'image/jpeg';
+                    quality = FIXED_QUALITY;
+                } else if (format === 'image/webp') {
+                    ext = 'webp';
+                    mimeType = 'image/webp';
+                    quality = FIXED_QUALITY;
+                } else if (format === 'image/bmp') {
+                    ext = 'bmp';
+                    mimeType = 'image/bmp';
+                }
+
+                const total = state.images.length;
+                const processed = [];
+
+                try {
+                    let fullWmData = null;
+                    let cornerWmData = null;
+                    if (state.fullWatermark) {
+                        fullWmData = await loadImageFromDataUrl(state.fullWatermark.dataUrl);
+                    }
+                    if (state.cornerWatermark) {
+                        cornerWmData = await loadImageFromDataUrl(state.cornerWatermark.dataUrl);
+                    }
+
+                    const processNext = (index) => {
+                        if (index >= total) {
+                            finishProcessing(processed);
+                            return;
+                        }
+
+                        const item = state.images[index];
+                        progressStatus.textContent = 'Processing ' + (index + 1) + '/' + total + ': ' + item.name;
+                        progressFill.style.width = ((index / total) * 100) + '%';
+                        progressPercent.textContent = Math.round((index / total) * 100) + '%';
+
+                        loadImageFromDataUrl(item.dataUrl)
+                            .then(imgData => {
+                                const canvas = processImageOnCanvas(
+                                    imgData.img,
+                                    paddingPercent,
+                                    opacityPercent,
+                                    cornerSizePercent,
+                                    position,
+                                    fullWmData ? fullWmData.img : null,
+                                    cornerWmData ? cornerWmData.img : null,
+                                    OUTPUT_SIZE
+                                );
+                                return new Promise((resolve, reject) => {
+                                    canvas.toBlob(function(blob) {
+                                        if (blob) resolve(blob);
+                                        else reject(new Error('Canvas toBlob failed'));
+                                    }, mimeType, quality);
+                                });
+                            })
+                            .then(resultBlob => {
+                                const baseName = getBaseName(item.name);
+                                const paddedIndex = String(index + 1).padStart(2, '0');
+                                const uniqueName = baseName + '_' + paddedIndex + '.' + ext;
+                                processed.push({ name: uniqueName, blob: resultBlob });
+                                setTimeout(() => processNext(index + 1), 0);
+                            })
+                            .catch(err => {
+                                console.error('Error processing', item.name, err);
+                                progressStatus.textContent = '⚠️ Error on ' + item.name;
+                                setTimeout(() => processNext(index + 1), 0);
+                            });
+                    };
+
+                    const finishProcessing = (results) => {
+                        progressFill.style.width = '100%';
+                        progressPercent.textContent = '100%';
+                        progressStatus.textContent = '✅ Done! ' + results.length + ' images processed.';
+
+                        state.processedBlobs = results;
+                        state.isProcessing = false;
+                        processBtn.innerHTML = '<i class="fas fa-download"></i> Downloading...';
+                        state.isDownloading = true;
+
+                        if (results.length > 0) {
+                            downloadAll(results);
+                        } else {
+                            finishAll();
+                        }
+                    };
+
+                    const downloadAll = (results) => {
+                        const totalDl = results.length;
+                        progressStatus.textContent = '⬇️ Downloading ' + totalDl + ' images...';
+                        let downloaded = 0;
+
+                        const downloadNext = (idx) => {
+                            if (idx >= totalDl) {
+                                progressStatus.textContent = '✅ All ' + totalDl + ' images downloaded.';
+                                finishAll();
+                                return;
+                            }
+                            const p = results[idx];
+                            saveAs(p.blob, p.name);
+                            downloaded++;
+                            const pct = Math.round((downloaded / totalDl) * 100);
+                            progressFill.style.width = pct + '%';
+                            progressPercent.textContent = pct + '%';
+                            progressStatus.textContent = '⬇️ Downloaded ' + downloaded + '/' + totalDl +
+                                ': ' + p.name;
+                            setTimeout(() => downloadNext(idx + 1), 120);
+                        };
+                        downloadNext(0);
+                    };
+
+                    const finishAll = () => {
+                        state.isDownloading = false;
+                        processBtn.disabled = false;
+                        processBtn.innerHTML = '<i class="fas fa-play"></i> Process &amp; Download Images';
+                        setControlsEnabled(true);
+                        updateProcessButton();
+                    };
+
+                    processNext(0);
+
+                } catch (err) {
+                    console.error('Fatal error:', err);
+                    progressStatus.textContent = '❌ Fatal error: ' + err.message;
+                    state.isProcessing = false;
+                    state.isDownloading = false;
+                    processBtn.disabled = false;
+                    processBtn.innerHTML = '<i class="fas fa-play"></i> Process &amp; Download Images';
+                    setControlsEnabled(true);
+                    updateProcessButton();
+                }
+            }
+
+            // ---- Update process button ----
+            function updateProcessButton() {
+                const hasImages = state.images.length > 0;
+                if (state.isProcessing || state.isDownloading) return;
+
+                if (!hasImages) {
+                    processBtn.disabled = true;
+                    processBtn.innerHTML = '<i class="fas fa-images"></i> Upload images first';
+                    return;
+                }
+
+                processBtn.disabled = false;
+                const hasFull = !!state.fullWatermark;
+                const hasCorner = !!state.cornerWatermark;
+                const formatName = formatDisplayLabel.textContent;
+                let label = 'Process &amp; Download (' + formatName;
+                if (hasFull && hasCorner) label += ', both';
+                else if (hasFull) label += ', full-screen';
+                else if (hasCorner) label += ', corner';
+                else label += ', no watermark';
+                label += ')';
+                processBtn.innerHTML = '<i class="fas fa-play"></i> ' + label;
+            }
+
+            // ---- Resize observer ----
+            function setupResizeObserver() {
+                const container = document.getElementById('livePreviewContainer');
+                if (window.ResizeObserver) {
+                    const ro = new ResizeObserver(() => {
+                        if (!state.isProcessing && !state.isDownloading) {
+                            renderLivePreview();
+                        }
+                    });
+                    ro.observe(container);
+                }
+            }
+
+            // ---- Event listeners ----
+            imageInput.addEventListener('change', function(e) {
+                if (state.isProcessing || state.isDownloading) return;
+                const files = Array.from(e.target.files);
+                if (files.length === 0) return;
+                const imageFiles = files.filter(function(f) { return f.type.startsWith('image/'); });
+                if (imageFiles.length === 0) {
+                    alert('Please select image files (JPG, PNG, WebP, etc.)');
+                    return;
+                }
+                let loaded = 0;
+                imageFiles.forEach(function(file) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        state.images.push({ file: file, dataUrl: ev.target.result, name: file.name });
+                        loaded++;
+                        if (loaded === imageFiles.length) {
+                            if (state.images.length === imageFiles.length && state.images.length > 0) {
+                                state.previewIndex = 0;
+                            }
+                            updateCountsAndRender();
+                            state.processedBlobs = [];
+                            updateProcessButton();
+                            imageInput.value = '';
+                            renderLivePreview();
+                        }
+                    };
+                    reader.onerror = function() {
+                        loaded++;
+                        if (loaded === imageFiles.length) {
+                            updateCountsAndRender();
+                            imageInput.value = '';
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            imageUploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                if (state.isProcessing || state.isDownloading) return;
+                imageUploadZone.classList.add('dragover');
+            });
+            imageUploadZone.addEventListener('dragleave', function() {
+                imageUploadZone.classList.remove('dragover');
+            });
+            imageUploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                imageUploadZone.classList.remove('dragover');
+                if (state.isProcessing || state.isDownloading) return;
+                const files = Array.from(e.dataTransfer.files);
+                if (files.length === 0) return;
+                const imageFiles = files.filter(function(f) { return f.type.startsWith('image/'); });
+                if (imageFiles.length === 0) {
+                    alert('Please drop image files.');
+                    return;
+                }
+                let loaded = 0;
+                imageFiles.forEach(function(file) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        state.images.push({ file: file, dataUrl: ev.target.result, name: file.name });
+                        loaded++;
+                        if (loaded === imageFiles.length) {
+                            if (state.images.length === imageFiles.length && state.images.length > 0) {
+                                state.previewIndex = 0;
+                            }
+                            updateCountsAndRender();
+                            state.processedBlobs = [];
+                            updateProcessButton();
+                            renderLivePreview();
+                        }
+                    };
+                    reader.onerror = function() {
+                        loaded++;
+                        if (loaded === imageFiles.length) {
+                            updateCountsAndRender();
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            function onSettingChange() {
+                if (!state.isProcessing && !state.isDownloading) {
+                    state.processedBlobs = [];
+                    updateProcessButton();
+                    renderLivePreview();
+                }
+            }
+
+            paddingSlider.addEventListener('input', function() {
+                paddingValue.textContent = this.value + '%';
+                onSettingChange();
+            });
+            opacitySlider.addEventListener('input', function() {
+                opacityValue.textContent = this.value + '%';
+                onSettingChange();
+            });
+            cornerSizeSlider.addEventListener('input', function() {
+                cornerSizeValue.textContent = this.value + '%';
+                onSettingChange();
+            });
+            cornerPosition.addEventListener('change', onSettingChange);
+
+            outputFormatSelect.addEventListener('change', function() {
+                updateFormatUI();
+                if (!state.isProcessing && !state.isDownloading) {
+                    state.processedBlobs = [];
+                    updateProcessButton();
+                }
+            });
+
+            // Watermark uploads
+            fullWmZone.addEventListener('click', function(e) {
+                if (state.isProcessing || state.isDownloading) return;
+                if (e.target.tagName !== 'INPUT') fullWmInput.click();
+            });
+            fullWmInput.addEventListener('change', function(e) {
+                if (state.isProcessing || state.isDownloading) return;
+                if (e.target.files.length > 0) {
+                    handleWatermarkUpload(e.target.files[0], 'full');
+                }
+                fullWmInput.value = '';
+            });
+            fullWmZone.addEventListener('dragover', function(e) { e.preventDefault();
+                fullWmZone.style.borderColor = 'var(--accent)'; });
+            fullWmZone.addEventListener('dragleave', function() { fullWmZone.style.borderColor = ''; });
+            fullWmZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                fullWmZone.style.borderColor = '';
+                if (state.isProcessing || state.isDownloading) return;
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type === 'image/png') {
+                    handleWatermarkUpload(files[0], 'full');
+                } else {
+                    alert('Please drop a PNG file for the full-screen watermark.');
+                }
+            });
+
+            cornerWmZone.addEventListener('click', function(e) {
+                if (state.isProcessing || state.isDownloading) return;
+                if (e.target.tagName !== 'INPUT') cornerWmInput.click();
+            });
+            cornerWmInput.addEventListener('change', function(e) {
+                if (state.isProcessing || state.isDownloading) return;
+                if (e.target.files.length > 0) {
+                    handleWatermarkUpload(e.target.files[0], 'corner');
+                }
+                cornerWmInput.value = '';
+            });
+            cornerWmZone.addEventListener('dragover', function(e) { e.preventDefault();
+                cornerWmZone.style.borderColor = 'var(--accent)'; });
+            cornerWmZone.addEventListener('dragleave', function() { cornerWmZone.style.borderColor = ''; });
+            cornerWmZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                cornerWmZone.style.borderColor = '';
+                if (state.isProcessing || state.isDownloading) return;
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type === 'image/png') {
+                    handleWatermarkUpload(files[0], 'corner');
+                } else {
+                    alert('Please drop a PNG file for the corner watermark.');
+                }
+            });
+
+            processBtn.addEventListener('click', processImages);
+
+            // ---- Init ----
+            function init() {
+                paddingValue.textContent = '4%';
+                opacityValue.textContent = '4%';
+                cornerSizeValue.textContent = '26%';
+                updateFormatUI();
+
+                updateCountsAndRender();
+                updateProcessButton();
+                updateWatermarkUI('full');
+                updateWatermarkUI('corner');
+
+                const container = document.getElementById('livePreviewContainer');
+                const rect = container.getBoundingClientRect();
+                const size = Math.min(rect.width || 400, rect.height || 400);
+                const canvasSize = Math.min(size, PREVIEW_SIZE);
+                liveCanvas.width = canvasSize;
+                liveCanvas.height = canvasSize;
+                const ctx = liveCanvas.getContext('2d');
+                ctx.fillStyle = '#fafcff';
+                ctx.fillRect(0, 0, canvasSize, canvasSize);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '16px "Inter", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('📤 Upload images', canvasSize / 2, canvasSize / 2 - 8);
+                ctx.font = '13px "Inter", sans-serif';
+                ctx.fillStyle = '#b8c4d8';
+                ctx.fillText('live preview will appear here', canvasSize / 2, canvasSize / 2 + 24);
+
+                setupResizeObserver();
+
+                console.log('🖼️ Image Watermark Tool · 3000×3000 · Live Preview ready.');
+            }
+
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    if (!state.isProcessing && !state.isDownloading) {
+                        renderLivePreview();
+                    }
+                }, 200);
+            });
+
+            init();
+        })();
+    </script>
+
+</body>
+</html>
