@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Image Fit & Resize</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+
+<!-- Font Awesome 6 (Free) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+/* ─── Reset & base ─── */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(145deg, #f0f4fe 0%, #d9e2ef 100%);
+    min-height: 100vh;
+    padding: 1.5rem;
+    color: #0a1628;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+.app {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ─── Header ─── */
+.header {
+    background: linear-gradient(135deg, #171a35 0%, #302b63 100%);
+    color: #fff;
+    padding: 32px 36px;
+    border-radius: 24px;
+    box-shadow: 0 18px 50px rgba(26, 35, 58, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.header-left .logo-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #00b894, #00a381);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3);
+}
+.header-left h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+.header-left h1 span {
+    background: linear-gradient(135deg, #00b894, #00d1a0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.header-badge {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(4px);
+    padding: 6px 16px;
+    border-radius: 40px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.header-badge i {
+    font-size: 13px;
+    color: #00d1a0;
+}
+.header-badge.private i {
+    color: #fbbf24;
+}
+.header p {
+    color: #d8d9ef;
+    font-size: 14px;
+    margin: 0;
+    max-width: 400px;
+}
+
+/* ─── Grid ─── */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 6px;
+}
+@media (max-width: 820px) {
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+/* ─── Cards ─── */
+.card {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 24px;
+    padding: 26px 28px 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    transition: box-shadow 0.25s ease;
+}
+.card:hover {
+    box-shadow: 0 12px 48px rgba(0,0,0,0.08);
+}
+.full {
+    grid-column: 1 / -1;
+}
+@media (max-width: 820px) {
+    .full {
+        grid-column: auto;
+    }
+}
+
+/* ─── Step heading ─── */
+.step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+.num {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #eef2ff;
+    color: #4f46e5;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 14px;
+}
+.step h2 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    color: #0a1628;
+}
+
+/* ─── Upload zone ─── */
+.drop {
+    display: block;
+    border: 2px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 32px 20px;
+    text-align: center;
+    background: rgba(255,255,255,0.3);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.drop:hover {
+    border-color: #818cf8;
+    background: rgba(129, 140, 248, 0.08);
+    transform: scale(1.01);
+}
+.drop-icon {
+    font-size: 36px;
+    display: block;
+    margin-bottom: 6px;
+    color: #4f46e5;
+}
+.drop strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #0a1628;
+}
+.drop span {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    margin-top: 4px;
+}
+.drop span i {
+    color: #10b981;
+    margin-right: 4px;
+}
+input[type="file"] {
+    display: none;
+}
+
+.file-count {
+    margin-top: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.file-list {
+    margin-top: 8px;
+    max-height: 100px;
+    overflow-y: auto;
+    background: rgba(255,255,255,0.3);
+    border-radius: 12px;
+    padding: 4px 6px;
+}
+.file-item {
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.4);
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.file-item:last-child {
+    border-bottom: 0;
+}
+.file-item i {
+    color: #4f46e5;
+    font-size: 14px;
+}
+
+/* ─── Controls ─── */
+.size-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+input[type="number"],
+select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: inherit;
+    background: rgba(255,255,255,0.6);
+    color: #0a1628;
+    transition: all 0.2s;
+    outline: none;
+}
+input[type="number"]:focus,
+select:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12);
+    background: #fff;
+}
+.original {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.4);
+    color: #334155;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+.original i {
+    color: #4f46e5;
+}
+
+/* ─── Mode box ─── */
+.mode {
+    margin-top: 16px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: #eef2ff;
+    border: 1px solid #dbeafe;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #1e293b;
+}
+.mode b {
+    color: #4f46e5;
+}
+.mode i {
+    color: #10b981;
+    margin-right: 4px;
+}
+
+/* ─── Actions ─── */
+.actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+button {
+    border: 0;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+.primary {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.2);
+}
+.primary:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 28px rgba(79, 70, 229, 0.3);
+}
+.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
+}
+.success:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 28px rgba(16, 185, 129, 0.3);
+}
+.secondary {
+    background: #eef0f4;
+    color: #475569;
+}
+.secondary:hover:not(:disabled) {
+    background: #e2e6ed;
+    transform: translateY(-2px);
+}
+.btn-outline {
+    background: rgba(255,255,255,0.4);
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+}
+.btn-outline:hover:not(:disabled) {
+    background: rgba(255,255,255,0.7);
+    transform: translateY(-2px);
+}
+
+/* ─── Status ─── */
+.status {
+    margin-top: 14px;
+    min-height: 20px;
+    font-size: 13px;
+    color: #475569;
+    white-space: pre-line;
+    line-height: 1.6;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+.status .highlight {
+    color: #4f46e5;
+    font-weight: 600;
+}
+
+/* ─── Alignment box ─── */
+.align-box {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.3);
+    margin-top: 4px;
+}
+.align-option {
+    margin: 0 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #334155;
+}
+.align-option input[type="radio"] {
+    accent-color: #4f46e5;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+}
+
+/* ─── Preview ─── */
+.preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+@media (max-width: 600px) {
+    .preview-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+.preview-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.preview-title h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.preview-title h3 i {
+    color: #4f46e5;
+}
+.badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 30px;
+    background: rgba(99, 102, 241, 0.10);
+    color: #4f46e5;
+}
+.preview {
+    min-height: 240px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    background-image: linear-gradient(45deg, #e1e4e9 25%, transparent 25%),
+                      linear-gradient(-45deg, #e1e4e9 25%, transparent 25%),
+                      linear-gradient(45deg, transparent 75%, #e1e4e9 75%),
+                      linear-gradient(-45deg, transparent 75%, #e1e4e9 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+    color: #94a3b8;
+    font-size: 14px;
+    padding: 16px;
+}
+.preview canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+.preview .placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+}
+.preview .placeholder i {
+    font-size: 32px;
+    opacity: 0.4;
+}
+
+/* ─── Footer ─── */
+.footer-note {
+    text-align: center;
+    margin-top: 28px;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+}
+.footer-note i {
+    color: #10b981;
+    margin-right: 6px;
+}
+
+/* ─── Toast (simple) ─── */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #0a1628;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: inherit;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+.toast.error {
+    background: #dc2626;
+}
+.toast.success {
+    background: #059669;
+}
+
+/* ─── Responsive fine-tune ─── */
+@media (max-width: 768px) {
+    body { padding: 1rem; }
+    .header { padding: 24px 20px; flex-direction: column; align-items: flex-start; }
+    .header-left h1 { font-size: 22px; }
+    .header-right { width: 100%; justify-content: flex-start; }
+    .card { padding: 20px 16px; }
+    .size-row { grid-template-columns: 1fr; }
+    .actions button { flex: 1 1 100%; justify-content: center; }
+    .preview { min-height: 180px; }
+}
+@media (max-width: 480px) {
+    .header-left .logo-icon { width: 40px; height: 40px; font-size: 20px; }
+    .header-left h1 { font-size: 19px; }
+    .header-badge { font-size: 11px; padding: 4px 12px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+    <!-- ===== HEADER ===== -->
+    <div class="header">
+        <div class="header-left">
+            <div class="logo-icon"><i class="fas fa-arrows-alt-h"></i></div>
+            <h1><span>Smart</span> Image Fit &amp; Resize</h1>
+        </div>
+        <div class="header-right">
+            <span class="header-badge"><i class="fas fa-bolt"></i> Live Resize</span>
+            <span class="header-badge private"><i class="fas fa-lock"></i> 100% Local</span>
+            <span class="header-badge"><i class="fas fa-images"></i> Batch</span>
+        </div>
+    </div>
+
+    <!-- ===== MAIN GRID ===== -->
+    <div class="grid">
+
+        <!-- ===== LEFT CARD ===== -->
+        <div class="card">
+            <div class="step">
+                <div class="num">1</div>
+                <h2><i class="fas fa-cloud-upload-alt" style="color:#4f46e5;margin-right:8px;"></i> Select Images</h2>
+            </div>
+            <label for="imageInput" class="drop" id="dropZone">
+                <span class="drop-icon"><i class="fas fa-image"></i></span>
+                <strong>Browse Images</strong>
+                <span><i class="fas fa-check-circle"></i> Click here or drag &amp; drop &bull; Multiple images supported</span>
+            </label>
+            <input id="imageInput" type="file" accept="image/*" multiple>
+            <div id="fileCount" class="file-count"><i class="fas fa-images"></i> No images selected</div>
+            <div id="fileList" class="file-list"></div>
+        </div>
+
+        <!-- ===== RIGHT CARD ===== -->
+        <div class="card">
+            <div class="step">
+                <div class="num">2</div>
+                <h2><i class="fas fa-ruler-combined" style="color:#4f46e5;margin-right:8px;"></i> Set Output Size</h2>
+            </div>
+
+            <label for="sizePreset">OUTPUT IMAGE SIZE</label>
+            <select id="sizePreset">
+                <option value="200x225">200 × 225</option>
+                <option value="1464x600" selected>1464 × 600</option>
+                <option value="600x450">600 × 450</option>
+                <option value="300x225">300 × 225</option>
+                <option value="488x700">488 × 700</option>
+                <option value="650x350">650 × 350</option>
+                <option value="custom">✏️ Custom</option>
+            </select>
+
+            <div id="customSizeBox" style="display:none;margin-top:14px;">
+                <div class="size-row">
+                    <div>
+                        <label><i class="fas fa-arrow-right"></i> WIDTH (PX)</label>
+                        <input id="targetWidth" type="number" min="1" placeholder="e.g. 800">
+                    </div>
+                    <div>
+                        <label><i class="fas fa-arrow-down"></i> HEIGHT (PX)</label>
+                        <input id="targetHeight" type="number" min="1" placeholder="e.g. 600">
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:16px;">
+                <label><i class="fas fa-align-center"></i> IMAGE POSITION</label>
+                <div class="align-box">
+                    <label class="align-option"><input type="radio" name="imageAlign" value="left"> Left</label>
+                    <label class="align-option"><input type="radio" name="imageAlign" value="center" checked> Center</label>
+                    <label class="align-option"><input type="radio" name="imageAlign" value="right"> Right</label>
+                </div>
+            </div>
+
+            <div id="selectedSize" class="original">
+                <i class="fas fa-arrows-alt-h"></i> Selected output: 1464 × 600 px
+            </div>
+            <div id="originalSize" class="original">
+                <i class="fas fa-image"></i> Original image: —
+            </div>
+
+            <div class="mode">
+                <i class="fas fa-expand-arrows-alt"></i> <b>Smart Fit / Contain:</b> image ka aspect ratio same rahega.
+                Image target canvas ke andar <b>maximum possible size</b> tak fit hogi.
+                Left/Center/Right se horizontal blank space ki position control hogi.
+                Bachi jagah transparent hogi. <i class="fas fa-ban"></i> No crop &bull; No stretch &bull; No distortion.
+            </div>
+
+            <div class="actions">
+                <button id="resizeBtn" class="primary"><i class="fas fa-play"></i> Resize &amp; Fit</button>
+                <button id="downloadBtn" class="success" disabled><i class="fas fa-download"></i> Download All PNG</button>
+                <button id="clearBtn" class="secondary"><i class="fas fa-undo-alt"></i> Clear</button>
+            </div>
+            <div id="status" class="status">Ready — upload images to begin.</div>
+        </div>
+
+        <!-- ===== PREVIEW CARD (full width) ===== -->
+        <div class="card full">
+            <div class="step">
+                <div class="num">3</div>
+                <h2><i class="fas fa-eye" style="color:#4f46e5;margin-right:8px;"></i> Preview</h2>
+            </div>
+            <div class="preview-grid">
+                <div>
+                    <div class="preview-title">
+                        <h3><i class="far fa-image"></i> Original Image</h3>
+                        <span class="badge">First selected</span>
+                    </div>
+                    <div id="originalPreview" class="preview">
+                        <div class="placeholder"><i class="fas fa-image"></i> No image selected</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="preview-title">
+                        <h3><i class="fas fa-arrows-rotate"></i> Output Canvas</h3>
+                        <span id="outputBadge" class="badge">Waiting</span>
+                    </div>
+                    <div id="outputPreview" class="preview">
+                        <div class="placeholder"><i class="fas fa-arrow-right"></i> Resize an image to preview</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <div class="footer-note">
+        <i class="fas fa-shield-alt"></i> All processing happens locally in your browser. Images are not uploaded.
+    </div>
+
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+// ─── DOM refs ───
+const $ = id => document.getElementById(id);
+const presetSizes = {
+    "200x225": [200, 225],
+    "1464x600": [1464, 600],
+    "600x450": [600, 450],
+    "300x225": [300, 225],
+    "488x700": [488, 700],
+    "650x350": [650, 350]
+};
+let files = [], outputs = [];
+
+// ─── Toast ───
+let toastTimeout = null;
+
+function showToast(msg, type = 'info', duration = 2500) {
+    if (toastTimeout) clearTimeout(toastTimeout);
+    const toast = $('toast');
+    const toastMsg = $('toastMsg');
+    toastMsg.textContent = msg;
+    toast.className = 'toast';
+    if (type === 'error') toast.classList.add('error');
+    if (type === 'success') toast.classList.add('success');
+    toast.classList.add('show');
+    toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+// ─── Helpers ───
+function getOutputSize() {
+    const v = $('sizePreset').value;
+    return v === 'custom' ? [+$('targetWidth').value, +$('targetHeight').value] : presetSizes[v];
+}
+
+function getAlignment() {
+    const r = document.querySelector('input[name="imageAlign"]:checked');
+    return r ? r.value : 'center';
+}
+
+// ─── Preset change ───
+$('sizePreset').onchange = function() {
+    const v = this.value;
+    $('customSizeBox').style.display = v === 'custom' ? 'block' : 'none';
+    $('selectedSize').innerHTML = `<i class="fas fa-arrows-alt-h"></i> Selected output: ${
+        v === 'custom' ? 'Custom size' : `${presetSizes[v][0]} × ${presetSizes[v][1]} px`
+    }`;
+};
+
+// ─── File input ───
+$('imageInput').onchange = e => setFiles([...e.target.files]);
+
+// ─── Drag & drop ───
+const dropZone = $('dropZone');
+['dragenter', 'dragover'].forEach(ev => {
+    dropZone.addEventListener(ev, e => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#818cf8';
+    });
+});
+['dragleave', 'drop'].forEach(ev => {
+    dropZone.addEventListener(ev, e => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#cbd5e1';
+    });
+});
+dropZone.addEventListener('drop', e => {
+    const items = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+    if (items.length) setFiles(items);
+});
+
+// ─── Set files ───
+async function setFiles(list) {
+    files = list;
+    outputs = [];
+    $('downloadBtn').disabled = true;
+    $('fileList').innerHTML = '';
+    $('outputPreview').innerHTML = `<div class="placeholder"><i class="fas fa-arrow-right"></i> Resize an image to preview</div>`;
+    $('outputBadge').textContent = 'Waiting';
+
+    if (!files.length) {
+        $('fileCount').innerHTML = '<i class="fas fa-images"></i> No images selected';
+        $('originalSize').innerHTML = '<i class="fas fa-image"></i> Original image: —';
+        $('originalPreview').innerHTML = `<div class="placeholder"><i class="fas fa-image"></i> No image selected</div>`;
+        $('status').textContent = 'Ready — upload images to begin.';
+        return;
+    }
+
+    $('fileCount').innerHTML = `<i class="fas fa-images"></i> ${files.length} image${files.length > 1 ? 's' : ''} selected`;
+    files.forEach((f, i) => {
+        const d = document.createElement('div');
+        d.className = 'file-item';
+        d.innerHTML = `<i class="fas fa-file-image"></i> ${i+1}. ${f.name}`;
+        $('fileList').appendChild(d);
+    });
+
+    const img = await load(files[0]);
+    $('originalSize').innerHTML = `<i class="fas fa-image"></i> Original image: ${img.naturalWidth} × ${img.naturalHeight} px`;
+    preview(img, $('originalPreview'), 430);
+    $('status').textContent = 'Ready to resize.';
+}
+
+// ─── Load image ───
+function load(file) {
+    return new Promise((res, rej) => {
+        const u = URL.createObjectURL(file);
+        const i = new Image();
+        i.onload = () => { URL.revokeObjectURL(u);
+            res(i); };
+        i.onerror = () => { URL.revokeObjectURL(u);
+            rej(); };
+        i.src = u;
+    });
+}
+
+// ─── Preview helper ───
+function preview(img, box, max) {
+    box.innerHTML = '';
+    const c = document.createElement('canvas');
+    const s = Math.min(1, max / img.naturalWidth, max / img.naturalHeight);
+    c.width = Math.max(1, Math.round(img.naturalWidth * s));
+    c.height = Math.max(1, Math.round(img.naturalHeight * s));
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    box.appendChild(c);
+}
+
+// ─── Resize ───
+$('resizeBtn').onclick = async function() {
+    if (!files.length) {
+        showToast('Please select at least one image.', 'error');
+        return;
+    }
+
+    const [W, H] = getOutputSize();
+    if (!Number.isInteger(W) || !Number.isInteger(H) || W < 1 || H < 1) {
+        showToast('Please enter valid Width and Height.', 'error');
+        return;
+    }
+
+    const alignment = getAlignment();
+    outputs = [];
+    const outPreview = $('outputPreview');
+    outPreview.innerHTML = '';
+    $('outputBadge').textContent = `${W} × ${H}`;
+    $('status').textContent = 'Processing...';
+
+    for (let n = 0; n < files.length; n++) {
+        const img = await load(files[n]);
+        const c = document.createElement('canvas');
+        c.width = W;
+        c.height = H;
+        const ctx = c.getContext('2d', { alpha: true });
+        ctx.clearRect(0, 0, W, H);
+
+        // Smart fit: preserve aspect ratio, maximum size
+        const s = Math.min(W / img.naturalWidth, H / img.naturalHeight);
+        const dw = img.naturalWidth * s;
+        const dh = img.naturalHeight * s;
+
+        let x;
+        if (alignment === 'left') x = 0;
+        else if (alignment === 'right') x = W - dw;
+        else x = (W - dw) / 2;
+
+        const y = (H - dh) / 2;
+        ctx.drawImage(img, x, y, dw, dh);
+
+        const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+        const base = files[n].name.replace(/\.[^/.]+$/, '');
+        outputs.push({ blob, name: `${base}_${W}x${H}_${alignment}.png` });
+
+        // Show first output in preview
+        if (n === 0) {
+            const pc = document.createElement('canvas');
+            const ps = Math.min(1, 430 / W, 300 / H);
+            pc.width = Math.max(1, Math.round(W * ps));
+            pc.height = Math.max(1, Math.round(H * ps));
+            pc.getContext('2d').drawImage(c, 0, 0, pc.width, pc.height);
+            outPreview.appendChild(pc);
+        }
+    }
+
+    const first = await load(files[0]);
+    const s = Math.min(W / first.naturalWidth, H / first.naturalHeight);
+    const fw = Math.round(first.naturalWidth * s);
+    const fh = Math.round(first.naturalHeight * s);
+
+    $('status').innerHTML =
+        `✅ Completed: ${outputs.length} image(s)\n` +
+        `📐 Canvas: ${W} × ${H}px\n` +
+        `📏 First image maximum fit: ${fw} × ${fh}px\n` +
+        `📍 Position: ${alignment.charAt(0).toUpperCase() + alignment.slice(1)}\n` +
+        `⬜ Remaining area: transparent\n` +
+        `✅ Aspect ratio preserved • No crop • No distortion`;
+
+    $('downloadBtn').disabled = false;
+    showToast(`Resized ${outputs.length} image(s) successfully!`, 'success');
+};
+
+// ─── Download all ───
+$('downloadBtn').onclick = async function() {
+    if (!outputs.length) return;
+    for (let o of outputs) {
+        const u = URL.createObjectURL(o.blob);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = o.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(u), 1000);
+        await new Promise(r => setTimeout(r, 250));
+    }
+    showToast('All images downloaded!', 'success');
+};
+
+// ─── Clear ───
+$('clearBtn').onclick = function() {
+    files = [];
+    outputs = [];
+    $('imageInput').value = '';
+    $('fileCount').innerHTML = '<i class="fas fa-images"></i> No images selected';
+    $('fileList').innerHTML = '';
+    $('originalSize').innerHTML = '<i class="fas fa-image"></i> Original image: —';
+    $('originalPreview').innerHTML = `<div class="placeholder"><i class="fas fa-image"></i> No image selected</div>`;
+    $('outputPreview').innerHTML = `<div class="placeholder"><i class="fas fa-arrow-right"></i> Resize an image to preview</div>`;
+    $('outputBadge').textContent = 'Waiting';
+    $('status').textContent = 'Ready — upload images to begin.';
+    $('downloadBtn').disabled = true;
+    $('sizePreset').value = '1464x600';
+    $('customSizeBox').style.display = 'none';
+    $('selectedSize').innerHTML = `<i class="fas fa-arrows-alt-h"></i> Selected output: 1464 × 600 px`;
+    $('targetWidth').value = '';
+    $('targetHeight').value = '';
+    document.querySelector('input[name="imageAlign"][value="center"]').checked = true;
+    showToast('Cleared everything', 'info');
+};
+
+// ─── Init ───
+$('selectedSize').innerHTML = `<i class="fas fa-arrows-alt-h"></i> Selected output: 1464 × 600 px`;
+</script>
+</body>
+</html>
