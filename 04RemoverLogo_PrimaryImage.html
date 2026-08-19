@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Batch Logo Remover Tool</title>
+<style>
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:20px;
+    text-align:center;
+}
+h1{
+    margin-bottom:10px;
+}
+.container{
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    display:inline-block;
+}
+canvas{
+    border:1px solid #ccc;
+    margin-top:15px;
+    max-width:100%;
+    cursor:crosshair;
+}
+.controls{
+    margin-top:15px;
+}
+button{
+    padding:10px 18px;
+    margin:5px;
+    border:none;
+    background:#007bff;
+    color:white;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:14px;
+}
+button:hover{
+    background:#0056b3;
+}
+input[type=file]{
+    margin-top:10px;
+}
+.note{
+    font-size:13px;
+    color:#666;
+}
+</style>
+</head>
+
+<body>
+
+<h1>AI Logo Removal – Batch Processor</h1>
+
+<div class="container">
+    <input type="file" id="upload" multiple accept="image/*"><br>
+    <div class="note">Upload multiple images → Draw box on FIRST image → Export all</div>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="controls">
+        <button id="clear">Reset Selection</button>
+        <button id="process">Remove Logo From All Images</button>
+    </div>
+</div>
+
+<script>
+const upload = document.getElementById('upload');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let images = [];
+let firstImage = new Image();
+
+let startX, startY, endX, endY;
+let drawing = false;
+let selection = null;
+let scaleX = 1;
+let scaleY = 1;
+
+// Load images
+upload.addEventListener('change', function(e){
+    images = Array.from(e.target.files);
+    if(images.length === 0) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt){
+        firstImage.onload = function(){
+            canvas.width = firstImage.width > 900 ? 900 : firstImage.width;
+            canvas.height = firstImage.height * (canvas.width / firstImage.width);
+
+            scaleX = firstImage.width / canvas.width;
+            scaleY = firstImage.height / canvas.height;
+
+            drawPreview();
+        }
+        firstImage.src = evt.target.result;
+    }
+    reader.readAsDataURL(images[0]);
+});
+
+function drawPreview(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(firstImage,0,0,canvas.width,canvas.height);
+
+    if(selection){
+        ctx.strokeStyle="red";
+        ctx.lineWidth=2;
+        ctx.strokeRect(selection.x,selection.y,selection.w,selection.h);
+    }
+}
+
+// Draw rectangle
+canvas.addEventListener('mousedown', e=>{
+    drawing = true;
+    const rect = canvas.getBoundingClientRect();
+    startX = e.clientX - rect.left;
+    startY = e.clientY - rect.top;
+});
+
+canvas.addEventListener('mousemove', e=>{
+    if(!drawing) return;
+
+    const rect = canvas.getBoundingClientRect();
+    endX = e.clientX - rect.left;
+    endY = e.clientY - rect.top;
+
+    selection = {
+        x: startX,
+        y: startY,
+        w: endX - startX,
+        h: endY - startY
+    };
+
+    drawPreview();
+});
+
+canvas.addEventListener('mouseup', ()=> drawing=false);
+
+// Reset
+document.getElementById('clear').onclick = ()=>{
+    selection = null;
+    drawPreview();
+};
+
+// Remove logo (content fill simulation)
+function removeArea(img, sel){
+    const tempCanvas = document.createElement('canvas');
+    const tctx = tempCanvas.getContext('2d');
+
+    tempCanvas.width = img.width;
+    tempCanvas.height = img.height;
+
+    tctx.drawImage(img,0,0);
+
+    const rx = sel.x * scaleX;
+    const ry = sel.y * scaleY;
+    const rw = sel.w * scaleX;
+    const rh = sel.h * scaleY;
+
+    // Sample nearby color
+    const sample = tctx.getImageData(rx-5, ry-5, 10,10).data;
+
+    let r=0,g=0,b=0,count=0;
+    for(let i=0;i<sample.length;i+=4){
+        r+=sample[i];
+        g+=sample[i+1];
+        b+=sample[i+2];
+        count++;
+    }
+
+    r/=count; g/=count; b/=count;
+
+    tctx.fillStyle=`rgb(${r},${g},${b})`;
+    tctx.fillRect(rx,ry,rw,rh);
+
+    return tempCanvas;
+}
+
+// Process all images
+document.getElementById('process').onclick = async ()=>{
+    if(!selection){
+        alert("Please draw logo area first.");
+        return;
+    }
+
+    for(const file of images){
+        const img = await loadImage(file);
+        const cleaned = removeArea(img, selection);
+
+        downloadImage(cleaned, file.name);
+    }
+
+    alert("All images exported successfully.");
+};
+
+function loadImage(file){
+    return new Promise(resolve=>{
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload=e=>{
+            img.onload=()=>resolve(img);
+            img.src=e.target.result;
+        }
+        reader.readAsDataURL(file);
+    });
+}
+
+function downloadImage(canvas, name){
+    const link = document.createElement('a');
+    link.download = "cleaned_" + name;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+}
+</script>
+
+</body>
+</html>
