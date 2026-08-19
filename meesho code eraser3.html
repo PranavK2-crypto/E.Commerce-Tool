@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Batch Crop 3000x3000 Tool</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px}
+.wrap{max-width:950px;margin:auto;background:#fff;padding:20px;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+input[type=range]{width:100%}
+button{padding:10px 18px;border:none;border-radius:8px;background:#007bff;color:#fff;cursor:pointer}
+button:hover{background:#005ecb}
+#previewCanvas{border:1px solid #ccc;background:#fff;max-width:100%;width:500px;height:500px}
+.thumbbar{display:flex;align-items:center;gap:10px;margin:20px 0}
+#thumbContainer{display:flex;gap:8px;overflow:hidden;flex:1}
+.thumb{width:90px;height:90px;object-fit:cover;border:2px solid #ccc;border-radius:8px;cursor:pointer}
+.thumb.active{border:3px solid #007bff}
+.arrow{width:45px;height:45px;font-size:20px}
+#status{margin-top:15px;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h2>Batch Crop & 3000×3000 JPG Tool</h2>
+
+<input type="file" id="files" multiple accept="image/*"><br><br>
+
+<label>Bottom Crop: <b><span id="cropValue">80</span> px</b></label>
+<input type="range" id="cropSlider" min="0" max="1000" value="80">
+
+<div class="thumbbar">
+<button class="arrow" id="prevBtn">◀</button>
+<div id="thumbContainer"></div>
+<button class="arrow" id="nextBtn">▶</button>
+</div>
+
+<h3>Live Preview</h3>
+<canvas id="previewCanvas" width="500" height="500"></canvas>
+
+<br><br>
+<button id="processBtn">Process Images</button>
+<div id="status"></div>
+</div>
+
+<script>
+let imageFiles=[];
+let previewImage=null;
+let currentPreviewIndex=0;
+let thumbStartIndex=0;
+
+const slider=document.getElementById('cropSlider');
+const cropValue=document.getElementById('cropValue');
+
+slider.addEventListener('input',()=>{
+    cropValue.textContent=slider.value;
+    drawPreview();
+});
+
+document.getElementById('files').addEventListener('change',function(){
+    imageFiles=Array.from(this.files);
+    currentPreviewIndex=0;
+    thumbStartIndex=0;
+    renderThumbnails();
+    loadPreviewImage(0);
+});
+
+function renderThumbnails(){
+    const container=document.getElementById('thumbContainer');
+    container.innerHTML='';
+    const end=Math.min(thumbStartIndex+5,imageFiles.length);
+
+    for(let i=thumbStartIndex;i<end;i++){
+        const img=document.createElement('img');
+        img.className='thumb'+(i===currentPreviewIndex?' active':'');
+        img.onclick=()=>{
+            currentPreviewIndex=i;
+            renderThumbnails();
+            loadPreviewImage(i);
+        };
+
+        const reader=new FileReader();
+        reader.onload=e=>img.src=e.target.result;
+        reader.readAsDataURL(imageFiles[i]);
+        container.appendChild(img);
+    }
+}
+
+document.getElementById('prevBtn').onclick=()=>{
+    if(thumbStartIndex>0){
+        thumbStartIndex--;
+        renderThumbnails();
+    }
+};
+
+document.getElementById('nextBtn').onclick=()=>{
+    if(thumbStartIndex+5<imageFiles.length){
+        thumbStartIndex++;
+        renderThumbnails();
+    }
+};
+
+function loadPreviewImage(index){
+    if(!imageFiles[index]) return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+        previewImage=new Image();
+        previewImage.onload=drawPreview;
+        previewImage.src=e.target.result;
+    };
+    reader.readAsDataURL(imageFiles[index]);
+}
+
+function drawPreview(){
+    if(!previewImage) return;
+
+    const canvas=document.getElementById('previewCanvas');
+    const ctx=canvas.getContext('2d');
+
+    let cropHeight=previewImage.height-parseInt(slider.value);
+    if(cropHeight<1) cropHeight=previewImage.height;
+
+    ctx.fillStyle='#fff';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const scale=Math.min(canvas.width/previewImage.width,canvas.height/cropHeight);
+    const w=previewImage.width*scale;
+    const h=cropHeight*scale;
+    const x=(canvas.width-w)/2;
+    const y=(canvas.height-h)/2;
+
+    ctx.drawImage(
+        previewImage,
+        0,0,
+        previewImage.width,cropHeight,
+        x,y,w,h
+    );
+
+    const lineY=y+h;
+    ctx.strokeStyle='red';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(x,lineY);
+    ctx.lineTo(x+w,lineY);
+    ctx.stroke();
+}
+
+document.getElementById('processBtn').onclick=processImages;
+
+async function processImages(){
+    if(imageFiles.length===0){
+        alert('Please select images.');
+        return;
+    }
+
+    document.getElementById('status').textContent=
+        'Processing '+imageFiles.length+' image(s)...';
+
+    for(const file of imageFiles){
+        await processSingle(file);
+    }
+
+    document.getElementById('status').textContent=
+        'Finished. All JPG files downloaded.';
+}
+
+function processSingle(file){
+    return new Promise(resolve=>{
+        const reader=new FileReader();
+
+        reader.onload=e=>{
+            const img=new Image();
+
+            img.onload=()=>{
+                let cropHeight=img.height-parseInt(slider.value);
+                if(cropHeight<1) cropHeight=img.height;
+
+                const canvas=document.createElement('canvas');
+                canvas.width=3000;
+                canvas.height=3000;
+                const ctx=canvas.getContext('2d');
+
+                ctx.fillStyle='#fff';
+                ctx.fillRect(0,0,3000,3000);
+
+                const scale=Math.min(
+                    3000/img.width,
+                    3000/cropHeight
+                );
+
+                const w=img.width*scale;
+                const h=cropHeight*scale;
+                const x=(3000-w)/2;
+                const y=(3000-h)/2;
+
+                ctx.drawImage(
+                    img,
+                    0,0,
+                    img.width,cropHeight,
+                    x,y,w,h
+                );
+
+                const link=document.createElement('a');
+                const name=file.name.replace(/\.[^/.]+$/,'');
+                link.download=name+'_3000x3000.jpg';
+                link.href=canvas.toDataURL('image/jpeg',0.95);
+                link.click();
+
+                setTimeout(resolve,250);
+            };
+
+            img.src=e.target.result;
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+</script>
+</body>
+</html>
