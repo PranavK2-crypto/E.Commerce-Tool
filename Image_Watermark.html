@@ -156,7 +156,7 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 18px;
-            color: var(--gray-800, #1a2a3a);
+            color: var(--primary);
             font-size: 15px;
             font-weight: 700;
         }
@@ -346,6 +346,18 @@
         .wm-status.empty {
             color: var(--gray-400);
             font-weight: 400;
+        }
+
+        .custom-position {
+            display: none;
+            margin-top: 14px;
+            padding: 12px;
+            background: var(--gray-100);
+            border-radius: var(--radius-sm);
+        }
+
+        .custom-position.visible {
+            display: block;
         }
 
         button {
@@ -625,8 +637,9 @@
                         </label>
                         <span class="wm-status empty" id="cornerStatus">No file selected</span>
                     </div>
-                    <div class="label">Size <span class="value" id="cornerSizeLabel">26%</span></div>
-                    <input id="cornerSize" type="range" min="5" max="40" value="26">
+
+                    <div class="label">Size <span class="value" id="cornerSizeLabel">28%</span></div>
+                    <input id="cornerSize" type="range" min="5" max="40" value="28">
 
                     <div class="label" style="margin-top:12px">Position</div>
                     <select id="position">
@@ -634,7 +647,26 @@
                         <option value="top-right">Top Right</option>
                         <option value="bottom-left">Bottom Left</option>
                         <option value="bottom-right" selected>Bottom Right</option>
+                        <option value="custom">Customize</option>
                     </select>
+
+                    <div class="custom-position" id="customPosition">
+                        <div class="label">
+                            Horizontal Position
+                            <span class="value" id="customXLabel">97%</span>
+                        </div>
+                        <input id="customX" type="range" min="0" max="100" value="97">
+
+                        <div class="label" style="margin-top:12px">
+                            Vertical Position
+                            <span class="value" id="customYLabel">98%</span>
+                        </div>
+                        <input id="customY" type="range" min="0" max="100" value="98">
+
+                        <div class="small">
+                            0% means left/top and 100% means right/bottom.
+                        </div>
+                    </div>
                 </div>
 
                 <div class="control">
@@ -653,7 +685,9 @@
                 </button>
 
                 <div class="progress" id="progress">
-                    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
                     <div class="progress-info">
                         <span id="progressPercent">0%</span>
                         <span id="progressStatus">Ready</span>
@@ -674,15 +708,20 @@
                 <div class="panel-title">
                     <i class="fas fa-th"></i> Uploaded Images
                 </div>
+
                 <div class="thumbnails" id="thumbnails">
                     <div class="empty">Upload images to see previews.</div>
                 </div>
 
                 <div class="assets">
-                    <div class="section-title"><i class="fas fa-stamp"></i> Watermark Assets</div>
+                    <div class="section-title">
+                        <i class="fas fa-stamp"></i> Watermark Assets
+                    </div>
 
                     <div class="asset">
-                        <div class="asset-preview" id="fullPreview"><i class="fas fa-vector-square"></i></div>
+                        <div class="asset-preview" id="fullPreview">
+                            <i class="fas fa-vector-square"></i>
+                        </div>
                         <div>
                             <strong>Full-screen</strong>
                             <div class="small" id="fullInfo">Not set</div>
@@ -690,7 +729,9 @@
                     </div>
 
                     <div class="asset">
-                        <div class="asset-preview" id="cornerPreview"><i class="fas fa-thumbtack"></i></div>
+                        <div class="asset-preview" id="cornerPreview">
+                            <i class="fas fa-thumbtack"></i>
+                        </div>
                         <div>
                             <strong>Corner</strong>
                             <div class="small" id="cornerInfo">Not set</div>
@@ -711,6 +752,7 @@
             'use strict';
 
             const $ = id => document.getElementById(id);
+
             const state = {
                 images: [],
                 full: null,
@@ -743,7 +785,9 @@
                     padding: Number($('padding').value),
                     opacity: Number($('opacity').value),
                     cornerSize: Number($('cornerSize').value),
-                    position: $('position').value
+                    position: $('position').value,
+                    customX: Number($('customX').value),
+                    customY: Number($('customY').value)
                 };
             }
 
@@ -758,20 +802,28 @@
 
                 const padding = size * settings.padding / 100;
                 const available = size - padding * 2;
-                const ratio = image.width / image.height;
+                const imageRatio = image.width / image.height;
 
-                let width, height;
-                if (ratio >= 1) {
+                let width;
+                let height;
+
+                if (imageRatio >= 1) {
                     width = available;
-                    height = available / ratio;
+                    height = available / imageRatio;
                 } else {
                     height = available;
-                    width = available * ratio;
+                    width = available * imageRatio;
                 }
 
                 context.imageSmoothingEnabled = true;
                 context.imageSmoothingQuality = 'high';
-                context.drawImage(image, (size - width) / 2, (size - height) / 2, width, height);
+                context.drawImage(
+                    image,
+                    (size - width) / 2,
+                    (size - height) / 2,
+                    width,
+                    height
+                );
 
                 if (full && settings.opacity > 0) {
                     context.globalAlpha = settings.opacity / 100;
@@ -780,19 +832,47 @@
                 }
 
                 if (corner) {
-                    const cornerSize = size * settings.cornerSize / 100;
-                    const ratio = corner.width / corner.height;
-                    const width = ratio >= 1 ? cornerSize : cornerSize * ratio;
-                    const height = ratio >= 1 ? cornerSize / ratio : cornerSize;
+                    const watermarkSize = size * settings.cornerSize / 100;
+                    const watermarkRatio = corner.width / corner.height;
+
+                    const watermarkWidth = watermarkRatio >= 1
+                        ? watermarkSize
+                        : watermarkSize * watermarkRatio;
+
+                    const watermarkHeight = watermarkRatio >= 1
+                        ? watermarkSize / watermarkRatio
+                        : watermarkSize;
+
                     const margin = padding * .5 + 8;
+                    let x;
+                    let y;
 
-                    let x = margin;
-                    let y = margin;
+                    if (settings.position === 'custom') {
+                        const maxX = size - watermarkWidth - margin * 2;
+                        const maxY = size - watermarkHeight - margin * 2;
 
-                    if (settings.position.includes('right')) x = size - width - margin;
-                    if (settings.position.includes('bottom')) y = size - height - margin;
+                        x = margin + maxX * settings.customX / 100;
+                        y = margin + maxY * settings.customY / 100;
+                    } else {
+                        x = margin;
+                        y = margin;
 
-                    context.drawImage(corner, x, y, width, height);
+                        if (settings.position.includes('right')) {
+                            x = size - watermarkWidth - margin;
+                        }
+
+                        if (settings.position.includes('bottom')) {
+                            y = size - watermarkHeight - margin;
+                        }
+                    }
+
+                    context.drawImage(
+                        corner,
+                        x,
+                        y,
+                        watermarkWidth,
+                        watermarkHeight
+                    );
                 }
 
                 return output;
@@ -833,7 +913,10 @@
                 $('fileList').querySelectorAll('.remove').forEach(remove => {
                     remove.onclick = () => {
                         state.images.splice(Number(remove.dataset.index), 1);
-                        state.selected = Math.min(state.selected, Math.max(0, state.images.length - 1));
+                        state.selected = Math.min(
+                            state.selected,
+                            Math.max(0, state.images.length - 1)
+                        );
                         updateUI();
                     };
                 });
@@ -842,7 +925,8 @@
             function renderThumbnails() {
                 $('thumbnails').innerHTML = state.images.length
                     ? state.images.map((item, index) => `
-                        <div class="thumbnail ${index === state.selected ? 'active' : ''}" data-index="${index}">
+                        <div class="thumbnail ${index === state.selected ? 'active' : ''}"
+                             data-index="${index}">
                             <img src="${item.src}" alt="${item.file.name}">
                             <span>${index + 1}</span>
                         </div>
@@ -870,6 +954,7 @@
                 $('imageCount').textContent = state.images.length;
                 $('uploadedCount').textContent = state.images.length;
                 $('previewCount').textContent = state.images.length;
+
                 renderFiles();
                 renderThumbnails();
                 updateButton();
@@ -877,7 +962,10 @@
             }
 
             async function handleImages(files) {
-                const valid = [...files].filter(file => file.type.startsWith('image/'));
+                const valid = [...files].filter(file =>
+                    file.type.startsWith('image/')
+                );
+
                 const loaded = await Promise.all(valid.map(async file => ({
                     file,
                     src: await readDataUrl(file)
@@ -895,12 +983,19 @@
 
                 const src = await readDataUrl(file);
                 const image = await loadImage(src);
-                state[type] = { file, src, image };
+
+                state[type] = {
+                    file,
+                    src,
+                    image
+                };
 
                 $(`${type}Status`).textContent = file.name;
                 $(`${type}Status`).classList.remove('empty');
-                $(`${type}Preview`).innerHTML = `<img src="${src}" alt="${type} watermark">`;
+                $(`${type}Preview`).innerHTML =
+                    `<img src="${src}" alt="${type} watermark">`;
                 $(`${type}Info`).textContent = `${image.width}×${image.height}`;
+
                 renderPreview();
             }
 
@@ -908,7 +1003,9 @@
                 if (!state.images.length || state.busy) return;
 
                 if (!state.full && !state.corner &&
-                    !confirm('No watermarks added. Continue with padding only?')) return;
+                    !confirm('No watermarks added. Continue with padding only?')) {
+                    return;
+                }
 
                 state.busy = true;
                 updateButton();
@@ -924,11 +1021,18 @@
 
                 for (let i = 0; i < state.images.length; i++) {
                     const item = state.images[i];
-                    $('progressStatus').textContent = `Processing ${i + 1}/${state.images.length}`;
-                    $('progressFill').style.width = `${i / state.images.length * 100}%`;
-                    $('progressPercent').textContent = `${Math.round(i / state.images.length * 100)}%`;
+
+                    $('progressStatus').textContent =
+                        `Processing ${i + 1}/${state.images.length}`;
+
+                    $('progressFill').style.width =
+                        `${i / state.images.length * 100}%`;
+
+                    $('progressPercent').textContent =
+                        `${Math.round(i / state.images.length * 100)}%`;
 
                     const image = await loadImage(item.src);
+
                     const result = drawWatermarked(
                         image,
                         state.full?.image,
@@ -937,16 +1041,27 @@
                     );
 
                     const blob = await new Promise(resolve =>
-                        result.toBlob(resolve, format, format === 'image/png' || format === 'image/bmp' ? undefined : QUALITY)
+                        result.toBlob(
+                            resolve,
+                            format,
+                            format === 'image/png' || format === 'image/bmp'
+                                ? undefined
+                                : QUALITY
+                        )
                     );
 
-                    saveAs(blob, `${item.file.name.replace(/\.[^.]+$/, '')}_${String(i + 1).padStart(2, '0')}.${extension}`);
+                    saveAs(
+                        blob,
+                        `${item.file.name.replace(/\.[^.]+$/, '')}_${String(i + 1).padStart(2, '0')}.${extension}`
+                    );
+
                     await new Promise(resolve => setTimeout(resolve, 120));
                 }
 
                 $('progressFill').style.width = '100%';
                 $('progressPercent').textContent = '100%';
                 $('progressStatus').textContent = 'All images downloaded.';
+
                 state.busy = false;
                 updateButton();
             }
@@ -958,11 +1073,34 @@
                 });
             });
 
-            $('position').addEventListener('change', renderPreview);
+            ['customX', 'customY'].forEach(id => {
+                $(id).addEventListener('input', () => {
+                    $(`${id}Label`).textContent = `${$(id).value}%`;
+                    renderPreview();
+                });
+            });
+
+            $('position').addEventListener('change', () => {
+                $('customPosition').classList.toggle(
+                    'visible',
+                    $('position').value === 'custom'
+                );
+                renderPreview();
+            });
+
             $('processButton').addEventListener('click', processImages);
-            $('imageInput').addEventListener('change', event => handleImages(event.target.files));
-            $('fullInput').addEventListener('change', event => handleWatermark(event.target.files[0], 'full'));
-            $('cornerInput').addEventListener('change', event => handleWatermark(event.target.files[0], 'corner'));
+
+            $('imageInput').addEventListener('change', event =>
+                handleImages(event.target.files)
+            );
+
+            $('fullInput').addEventListener('change', event =>
+                handleWatermark(event.target.files[0], 'full')
+            );
+
+            $('cornerInput').addEventListener('change', event =>
+                handleWatermark(event.target.files[0], 'corner')
+            );
 
             $('imageDrop').addEventListener('dragover', event => {
                 event.preventDefault();
