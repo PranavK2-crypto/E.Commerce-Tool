@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Image Tools — Resize, Watermark & Mirror</title>
+    <title>Image Tools — Resize, Watermark, Mirror & Logo Remover</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
 
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
@@ -24,22 +24,37 @@
         }
 
         :root {
-            --primary: #4f46e5;
-            --primary-dark: #4338ca;
-            --primary-light: #818cf8;
+            --primary: #6c5ce7;
+            --primary-dark: #5a4bd1;
+            --primary-light: #a29bfe;
+            --primary-glow: rgba(108, 92, 231, 0.35);
             --secondary: #0f172a;
-            --accent: #8b5cf6;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
+            --accent: #fd79a8;
+            --accent-glow: rgba(253, 121, 168, 0.25);
+            --bg: #f0f2f8;
+            --card-bg: rgba(255, 255, 255, 0.82);
+            --card-border: rgba(255, 255, 255, 0.40);
             --text: #0f172a;
             --text-muted: #475569;
-            --border: #e2e8f0;
-            --shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
-            --shadow-hover: 0 12px 40px rgba(79, 70, 229, 0.12);
-            --radius: 20px;
-            --radius-sm: 12px;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --text-light: #94a3b8;
+            --shadow: 0 8px 40px rgba(15, 23, 42, 0.06);
+            --shadow-hover: 0 16px 56px rgba(108, 92, 231, 0.18);
+            --radius: 24px;
+            --radius-sm: 14px;
+            --transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Dark Mode */
+        [data-theme="dark"] {
+            --bg: #0b0e1a;
+            --card-bg: rgba(20, 25, 45, 0.88);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --text-light: #64748b;
+            --shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 16px 56px rgba(108, 92, 231, 0.25);
         }
 
         html {
@@ -53,12 +68,26 @@
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            transition: background 0.5s ease, color 0.5s ease;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 24px;
+        }
+
+        /* ---------- Scroll Progress ---------- */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            z-index: 9999;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 20px var(--primary-glow);
         }
 
         /* ---------- Preloader ---------- */
@@ -72,20 +101,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
+            z-index: 99999;
             transition: opacity 0.6s ease, visibility 0.6s ease;
         }
         .preloader.hidden {
             opacity: 0;
             visibility: hidden;
         }
-        .preloader .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid var(--border);
-            border-top-color: var(--primary);
+        .preloader .loader-ring {
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
+            border: 4px solid rgba(108, 92, 231, 0.10);
+            border-top-color: var(--primary);
             animation: spin 0.8s linear infinite;
+            box-shadow: 0 0 40px var(--primary-glow);
         }
         @keyframes spin {
             to {
@@ -95,32 +125,80 @@
 
         /* ---------- Utilities ---------- */
         .section-title {
-            font-size: 2.4rem;
-            font-weight: 800;
+            font-size: 2.6rem;
+            font-weight: 900;
             letter-spacing: -0.03em;
-            line-height: 1.2;
+            line-height: 1.15;
             margin-bottom: 12px;
+        }
+        .section-title .highlight {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .section-sub {
             font-size: 1.1rem;
             color: var(--text-muted);
             max-width: 620px;
             margin: 0 auto 40px;
+            line-height: 1.7;
         }
         .text-center {
             text-align: center;
         }
         .badge {
-            display: inline-block;
-            background: var(--primary);
-            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.12), rgba(253, 121, 168, 0.08));
+            color: var(--primary);
             font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            padding: 4px 14px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            padding: 6px 18px 6px 14px;
             border-radius: 100px;
             text-transform: uppercase;
             margin-bottom: 16px;
+            border: 1px solid rgba(108, 92, 231, 0.12);
+            backdrop-filter: blur(4px);
+        }
+        .badge i {
+            font-size: 0.7rem;
+        }
+
+        /* ---------- Theme Toggle ---------- */
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text);
+            transition: var(--transition);
+            backdrop-filter: blur(8px);
+        }
+        .theme-toggle:hover {
+            background: rgba(108, 92, 231, 0.15);
+            transform: scale(1.05);
+            border-color: var(--primary-light);
+        }
+        .theme-toggle .fa-sun {
+            display: none;
+        }
+        .theme-toggle .fa-moon {
+            display: block;
+        }
+        [data-theme="dark"] .theme-toggle .fa-sun {
+            display: block;
+        }
+        [data-theme="dark"] .theme-toggle .fa-moon {
+            display: none;
         }
 
         /* ---------- Navigation ---------- */
@@ -130,43 +208,48 @@
             left: 0;
             width: 100%;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.72);
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+            background: rgba(255, 255, 255, 0.68);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.30);
             transition: var(--transition);
+        }
+        [data-theme="dark"] nav {
+            background: rgba(11, 14, 26, 0.80);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         nav .nav-inner {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 70px;
+            height: 72px;
         }
         .logo {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-weight: 800;
-            font-size: 1.25rem;
+            font-weight: 900;
+            font-size: 1.2rem;
             letter-spacing: -0.02em;
-            color: var(--secondary);
+            color: var(--text);
             text-decoration: none;
         }
         .logo i {
             color: var(--primary);
-            font-size: 1.6rem;
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 12px var(--primary-glow));
         }
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 32px;
+            gap: 28px;
             list-style: none;
         }
         .nav-links a {
             text-decoration: none;
             color: var(--text-muted);
             font-weight: 500;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: var(--transition);
             position: relative;
         }
@@ -177,30 +260,38 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: var(--primary);
+            background: linear-gradient(90deg, var(--primary), var(--accent));
             transition: var(--transition);
+            border-radius: 4px;
         }
         .nav-links a:hover {
-            color: var(--secondary);
+            color: var(--text);
         }
         .nav-links a:hover::after {
             width: 100%;
         }
         .nav-cta {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: #fff !important;
-            padding: 8px 22px;
+            padding: 8px 24px;
             border-radius: 100px;
             font-weight: 600;
             transition: var(--transition);
+            box-shadow: 0 4px 20px var(--primary-glow);
         }
         .nav-cta::after {
             display: none !important;
         }
         .nav-cta:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 32px var(--primary-glow);
+            color: #fff !important;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .hamburger {
@@ -215,7 +306,7 @@
         .hamburger span {
             width: 26px;
             height: 2.5px;
-            background: var(--secondary);
+            background: var(--text);
             border-radius: 4px;
             transition: var(--transition);
         }
@@ -224,6 +315,7 @@
         }
         .hamburger.active span:nth-child(2) {
             opacity: 0;
+            transform: scaleX(0);
         }
         .hamburger.active span:nth-child(3) {
             transform: rotate(-45deg) translate(5px, -5px);
@@ -231,44 +323,80 @@
 
         /* ---------- Hero ---------- */
         .hero {
-            padding: 110px 0 60px;
+            padding: 130px 0 70px;
             position: relative;
             overflow: hidden;
-            min-height: auto;
+            min-height: 100vh;
             display: flex;
             align-items: center;
         }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(108, 92, 231, 0.08), transparent 70%);
+            animation: floatOrb 12s ease-in-out infinite;
+            z-index: 0;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(253, 121, 168, 0.06), transparent 70%);
+            animation: floatOrb 14s ease-in-out infinite reverse;
+            z-index: 0;
+        }
+        @keyframes floatOrb {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                transform: translate(30px, -30px) scale(1.1);
+            }
+        }
+
         .hero .container {
+            position: relative;
+            z-index: 2;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 40px;
+            gap: 50px;
             align-items: center;
         }
         .hero-content {
             position: relative;
-            z-index: 2;
         }
         .hero-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(79, 70, 229, 0.08);
+            background: rgba(108, 92, 231, 0.08);
             color: var(--primary);
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             padding: 6px 18px 6px 14px;
             border-radius: 100px;
             margin-bottom: 20px;
-            border: 1px solid rgba(79, 70, 229, 0.12);
+            border: 1px solid rgba(108, 92, 231, 0.10);
+            backdrop-filter: blur(4px);
         }
         .hero-badge i {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
         }
         .hero h1 {
-            font-size: 3.6rem;
-            font-weight: 800;
+            font-size: 4rem;
+            font-weight: 900;
             letter-spacing: -0.04em;
-            line-height: 1.08;
+            line-height: 1.06;
             margin-bottom: 18px;
         }
         .hero h1 .highlight {
@@ -282,21 +410,21 @@
             color: var(--text-muted);
             max-width: 480px;
             margin-bottom: 32px;
-            line-height: 1.7;
+            line-height: 1.8;
         }
         .hero-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 14px;
             align-items: center;
         }
         .btn-primary {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: #fff;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 1.05rem;
             padding: 14px 36px;
             border-radius: 100px;
@@ -304,16 +432,15 @@
             cursor: pointer;
             text-decoration: none;
             transition: var(--transition);
-            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.2);
+            box-shadow: 0 4px 24px var(--primary-glow);
         }
         .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(79, 70, 229, 0.3);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 40px var(--primary-glow);
         }
         .btn-primary i {
-            font-size: 1rem;
-            transition: transform 0.25s ease;
+            font-size: 0.95rem;
+            transition: transform 0.3s ease;
         }
         .btn-primary:hover i {
             transform: translateX(4px);
@@ -323,20 +450,22 @@
             align-items: center;
             gap: 8px;
             background: transparent;
-            color: var(--secondary);
+            color: var(--text);
             font-weight: 600;
             font-size: 1rem;
             padding: 14px 28px;
             border-radius: 100px;
-            border: 1.5px solid var(--border);
+            border: 1.5px solid var(--card-border);
             cursor: pointer;
             text-decoration: none;
             transition: var(--transition);
+            backdrop-filter: blur(4px);
         }
         .btn-outline:hover {
             border-color: var(--primary);
             color: var(--primary);
-            background: rgba(79, 70, 229, 0.04);
+            background: rgba(108, 92, 231, 0.04);
+            transform: translateY(-2px);
         }
 
         /* Hero Visual */
@@ -347,29 +476,20 @@
             align-items: center;
             z-index: 1;
         }
-        .hero-visual .orb {
-            width: 320px;
-            height: 320px;
+        .hero-visual .orb-bg {
+            width: 380px;
+            height: 380px;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(79, 70, 229, 0.12), rgba(139, 92, 246, 0.05));
+            background: radial-gradient(circle at 30% 30%, rgba(108, 92, 231, 0.10), rgba(253, 121, 168, 0.04));
             position: absolute;
             z-index: 0;
-            animation: float 8s ease-in-out infinite;
+            animation: floatOrb 10s ease-in-out infinite;
         }
-        .hero-visual .orb:nth-child(2) {
-            width: 240px;
-            height: 240px;
-            background: radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.10), rgba(79, 70, 229, 0.03));
-            animation-delay: -3s;
-        }
-        @keyframes float {
-            0%,
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-            50% {
-                transform: translate(10px, -20px) scale(1.02);
-            }
+        .hero-visual .orb-bg:nth-child(2) {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle at 70% 70%, rgba(253, 121, 168, 0.08), rgba(108, 92, 231, 0.02));
+            animation-delay: -4s;
         }
 
         .hero-tools-preview {
@@ -377,45 +497,45 @@
             z-index: 1;
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 14px;
+            gap: 16px;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
         }
         .hero-tool-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
             border-radius: var(--radius-sm);
-            padding: 18px 10px;
+            padding: 20px 12px;
             text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+            box-shadow: var(--shadow);
             transition: var(--transition);
             animation: fadeUp 0.8s ease both;
-            animation-delay: calc(0.1s * var(--i, 1));
+            animation-delay: calc(0.12s * var(--i, 1));
         }
         .hero-tool-card:nth-child(1) {
             --i: 1;
         }
         .hero-tool-card:nth-child(2) {
             --i: 2;
-            transform: translateY(12px);
+            margin-top: 16px;
         }
         .hero-tool-card:nth-child(3) {
             --i: 3;
-            transform: translateY(24px);
+            margin-top: 32px;
         }
         .hero-tool-card:hover {
-            transform: translateY(-6px) scale(1.02);
+            transform: translateY(-8px) scale(1.03);
             border-color: var(--primary-light);
             box-shadow: var(--shadow-hover);
         }
         .hero-tool-card .icon-wrap {
-            width: 44px;
-            height: 44px;
-            margin: 0 auto 8px;
-            border-radius: 14px;
-            background: rgba(79, 70, 229, 0.08);
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 10px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.10), rgba(253, 121, 168, 0.06));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -424,18 +544,20 @@
             transition: var(--transition);
         }
         .hero-tool-card:hover .icon-wrap {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             color: #fff;
-            transform: scale(1.05);
+            transform: scale(1.08) rotate(-4deg);
+            box-shadow: 0 8px 24px var(--primary-glow);
         }
         .hero-tool-card h4 {
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 700;
         }
         .hero-tool-card p {
             font-size: 0.7rem;
             color: var(--text-muted);
             margin: 0;
+            opacity: 0.8;
         }
 
         @keyframes fadeUp {
@@ -449,23 +571,64 @@
             }
         }
 
+        /* ---------- Floating Particles ---------- */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary);
+            opacity: 0.06;
+            animation: particleFloat 20s infinite linear;
+        }
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.06;
+            }
+            90% {
+                opacity: 0.06;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
         /* ---------- Tools Section ---------- */
         .tools {
-            padding: 70px 0 60px;
-            background: #fff;
+            padding: 80px 0 70px;
+            background: var(--bg);
+            position: relative;
+            transition: background 0.5s ease;
         }
         .tools-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* ← now 4 columns */
+            grid-template-columns: repeat(4, 1fr);
             gap: 24px;
             margin-top: 16px;
         }
 
         .tool-card {
             background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: var(--radius);
-            padding: 30px 20px 24px;
-            border: 1px solid var(--border);
+            padding: 32px 22px 26px;
+            border: 1px solid var(--card-border);
             transition: var(--transition);
             box-shadow: var(--shadow);
             position: relative;
@@ -479,85 +642,67 @@
             left: 0;
             width: 100%;
             height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+            background-size: 200% 100%;
             opacity: 0;
             transition: var(--transition);
+            animation: shimmer 3s ease-in-out infinite;
         }
-        .tool-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--primary-light);
-            box-shadow: var(--shadow-hover);
+        @keyframes shimmer {
+            0%,
+            100% {
+                background-position: -200% 0;
+            }
+            50% {
+                background-position: 200% 0;
+            }
         }
         .tool-card:hover::before {
             opacity: 1;
         }
+        .tool-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-hover);
+        }
 
-        /* ----- Icon Boxes (all 4) ----- */
         .tool-card .icon-box {
-            width: 88px;
-            height: 88px;
+            width: 80px;
+            height: 80px;
             margin: 0 auto 16px;
-            border-radius: 24px;
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.4rem;
+            font-size: 2.2rem;
             color: #fff;
             position: relative;
-            transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             cursor: default;
         }
-
-        .tool-card .icon-box.icon-resize {
-            background: linear-gradient(145deg, #6366f1, #4f46e5, #3730a3);
-            box-shadow: 0 12px 32px rgba(79, 70, 229, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.20), inset 0 -4px 12px rgba(0, 0, 0, 0.15);
-        }
-        .tool-card .icon-box.icon-watermark {
-            background: linear-gradient(145deg, #2dd4bf, #0d9488, #0f766e);
-            box-shadow: 0 12px 32px rgba(20, 184, 166, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.20), inset 0 -4px 12px rgba(0, 0, 0, 0.15);
-        }
-        .tool-card .icon-box.icon-mirror {
-            background: linear-gradient(145deg, #f472b6, #ec4899, #db2777);
-            box-shadow: 0 12px 32px rgba(236, 72, 153, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.20), inset 0 -4px 12px rgba(0, 0, 0, 0.15);
-        }
-        /* NEW: Logo remover – orange/red theme */
-        .tool-card .icon-box.icon-eraser {
-            background: linear-gradient(145deg, #fb923c, #ea580c, #c2410c);
-            box-shadow: 0 12px 32px rgba(234, 88, 12, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.20), inset 0 -4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .tool-card .icon-box::before {
-            content: '';
+        .tool-card .icon-box .ring-pulse {
             position: absolute;
             inset: -6px;
-            border-radius: 30px;
-            background: inherit;
-            opacity: 0;
-            filter: blur(20px) brightness(1.2);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-            z-index: -1;
-            transform: scale(0.7);
-        }
-        .tool-card:hover .icon-box::before {
-            opacity: 0.6;
-            transform: scale(1);
-        }
-
-        .tool-card .icon-box::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25) 0%, transparent 70%);
+            border-radius: 28px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            animation: ringPulse 3s ease-in-out infinite;
             pointer-events: none;
-            border-radius: 30px;
-            opacity: 0.6;
+            opacity: 0;
             transition: opacity 0.5s ease;
         }
-        .tool-card:hover .icon-box::after {
-            opacity: 0.9;
+        .tool-card:hover .icon-box .ring-pulse {
+            opacity: 1;
+        }
+        @keyframes ringPulse {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.4;
+            }
+            50% {
+                transform: scale(1.15);
+                opacity: 0;
+            }
         }
 
         .tool-card .icon-box .icon-inner {
@@ -569,26 +714,45 @@
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
             z-index: 2;
-            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.10));
+            filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.10));
         }
-
         .tool-card:hover .icon-box .icon-inner {
-            transform: scale(1.15) translateY(-4px);
-            filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.20));
+            transform: scale(1.12) translateY(-4px);
+            filter: drop-shadow(0 8px 28px rgba(0, 0, 0, 0.18));
         }
 
-        /* Individual hover effects */
-        .tool-card:hover .icon-box.icon-resize .icon-inner {
-            transform: scale(1.15) translateY(-4px) rotate(-4deg);
+        .tool-card .icon-box.icon-resize {
+            background: linear-gradient(145deg, #6c5ce7, #5a4bd1, #3d2e8a);
+            box-shadow: 0 12px 32px rgba(108, 92, 231, 0.35);
         }
-        .tool-card:hover .icon-box.icon-watermark .icon-inner {
-            transform: scale(1.15) translateY(-4px) rotate(3deg);
+        .tool-card .icon-box.icon-watermark {
+            background: linear-gradient(145deg, #00b894, #00a381, #006b5a);
+            box-shadow: 0 12px 32px rgba(0, 184, 148, 0.35);
         }
-        .tool-card:hover .icon-box.icon-mirror .icon-inner {
-            transform: scale(1.15) translateY(-4px) scaleX(-1);
+        .tool-card .icon-box.icon-mirror {
+            background: linear-gradient(145deg, #fd79a8, #e8436e, #b82a52);
+            box-shadow: 0 12px 32px rgba(253, 121, 168, 0.35);
         }
-        .tool-card:hover .icon-box.icon-eraser .icon-inner {
-            transform: scale(1.15) translateY(-4px) rotate(8deg) scaleX(-1); /* playful erase feel */
+        .tool-card .icon-box.icon-eraser {
+            background: linear-gradient(145deg, #fdcb6e, #f39c12, #d68910);
+            box-shadow: 0 12px 32px rgba(243, 156, 18, 0.35);
+        }
+
+        .tool-card .icon-box::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 30px;
+            background: inherit;
+            opacity: 0;
+            filter: blur(30px) brightness(1.3);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            z-index: -1;
+            transform: scale(0.6);
+        }
+        .tool-card:hover .icon-box::before {
+            opacity: 0.5;
+            transform: scale(1);
         }
 
         .tool-card .icon-box {
@@ -606,45 +770,22 @@
         .tool-card .icon-box.icon-eraser {
             animation-delay: 3.6s;
         }
-
         @keyframes iconFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
         }
         .tool-card:hover .icon-box {
             animation-play-state: paused;
         }
 
-        .tool-card .icon-box .ring-pulse {
-            position: absolute;
-            inset: -8px;
-            border-radius: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            animation: ringPulse 3s ease-in-out infinite;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        .tool-card:hover .icon-box .ring-pulse {
-            opacity: 1;
-        }
-
-        @keyframes ringPulse {
-            0%, 100% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.15); opacity: 0; }
-        }
-
-        .tool-card .icon-box .icon-inner i {
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-            transition: text-shadow 0.4s ease;
-        }
-        .tool-card:hover .icon-box .icon-inner i {
-            text-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
-        }
-
         .tool-card h3 {
-            font-size: 1.3rem;
-            font-weight: 700;
+            font-size: 1.25rem;
+            font-weight: 800;
             margin-bottom: 6px;
             transition: color 0.3s ease;
         }
@@ -655,17 +796,17 @@
             color: var(--text-muted);
             font-size: 0.9rem;
             margin-bottom: 20px;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         .tool-card .btn-tool {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: #fff;
             font-weight: 600;
             font-size: 0.85rem;
-            padding: 10px 24px;
+            padding: 10px 26px;
             border-radius: 100px;
             border: none;
             cursor: pointer;
@@ -688,13 +829,12 @@
             left: 100%;
         }
         .tool-card .btn-tool:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px var(--primary-glow);
         }
         .tool-card .btn-tool i {
-            font-size: 0.85rem;
-            transition: transform 0.25s ease;
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
         }
         .tool-card .btn-tool:hover i {
             transform: translateX(4px);
@@ -702,8 +842,9 @@
 
         /* ---------- How It Works ---------- */
         .how-it-works {
-            padding: 70px 0 60px;
+            padding: 80px 0 70px;
             background: var(--bg);
+            transition: background 0.5s ease;
         }
         .steps-grid {
             display: grid;
@@ -712,38 +853,42 @@
             margin-top: 16px;
         }
         .step-card {
-            background: #fff;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: var(--radius);
-            padding: 28px 18px 24px;
+            padding: 30px 20px 26px;
             text-align: center;
-            border: 1px solid var(--border);
+            border: 1px solid var(--card-border);
             transition: var(--transition);
             box-shadow: var(--shadow);
             position: relative;
         }
         .step-card:hover {
-            transform: translateY(-6px);
+            transform: translateY(-8px);
             box-shadow: var(--shadow-hover);
             border-color: var(--primary-light);
         }
         .step-number {
-            width: 48px;
-            height: 48px;
+            width: 52px;
+            height: 52px;
             margin: 0 auto 14px;
             border-radius: 50%;
-            background: rgba(79, 70, 229, 0.08);
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.10), rgba(253, 121, 168, 0.06));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
-            font-size: 1.2rem;
+            font-weight: 900;
+            font-size: 1.3rem;
             color: var(--primary);
             transition: var(--transition);
+            border: 1px solid rgba(108, 92, 231, 0.08);
         }
         .step-card:hover .step-number {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             color: #fff;
             transform: scale(1.05);
+            box-shadow: 0 8px 24px var(--primary-glow);
         }
         .step-card h4 {
             font-size: 1.05rem;
@@ -759,28 +904,31 @@
 
         /* ---------- Marketplaces ---------- */
         .marketplaces {
-            padding: 60px 0 70px;
-            background: #fff;
+            padding: 70px 0 80px;
+            background: var(--bg);
+            transition: background 0.5s ease;
         }
         .marketplace-logos {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
-            gap: 32px 48px;
+            gap: 28px 48px;
             margin-top: 20px;
         }
         .marketplace-item {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 1.05rem;
             color: var(--text-muted);
             transition: var(--transition);
-            padding: 6px 14px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.5);
+            padding: 8px 18px;
+            border-radius: 14px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(8px);
         }
         .marketplace-item i {
             font-size: 1.6rem;
@@ -789,8 +937,10 @@
             transition: var(--transition);
         }
         .marketplace-item:hover {
-            color: var(--secondary);
-            transform: translateY(-2px);
+            color: var(--text);
+            transform: translateY(-4px) scale(1.02);
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-hover);
         }
         .marketplace-item:hover i {
             opacity: 1;
@@ -800,7 +950,7 @@
             margin-top: 28px;
             font-size: 0.85rem;
             color: var(--text-muted);
-            opacity: 0.7;
+            opacity: 0.6;
         }
 
         /* ---------- Footer ---------- */
@@ -808,6 +958,10 @@
             background: var(--secondary);
             color: #e2e8f0;
             padding: 50px 0 24px;
+            transition: background 0.5s ease;
+        }
+        [data-theme="dark"] footer {
+            background: #0b0e1a;
         }
         footer .footer-grid {
             display: grid;
@@ -818,7 +972,7 @@
         }
         footer .brand h3 {
             font-size: 1.25rem;
-            font-weight: 700;
+            font-weight: 800;
             color: #fff;
             margin-bottom: 8px;
         }
@@ -830,13 +984,13 @@
             font-size: 0.85rem;
             opacity: 0.7;
             max-width: 260px;
-            line-height: 1.6;
+            line-height: 1.7;
             margin-bottom: 0;
         }
         footer h4 {
             color: #fff;
             font-size: 0.9rem;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 12px;
             letter-spacing: 0.02em;
         }
@@ -854,6 +1008,7 @@
         }
         footer ul a:hover {
             color: #fff;
+            padding-left: 4px;
         }
         footer .bottom {
             display: flex;
@@ -864,7 +1019,37 @@
             text-align: center;
         }
 
-        /* ---------- Scroll Animations ---------- */
+        /* ---------- Back to Top ---------- */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 24px var(--primary-glow);
+            transition: var(--transition);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            z-index: 999;
+        }
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .back-to-top:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 36px var(--primary-glow);
+        }
+
+        /* ---------- Scroll Reveal ---------- */
         .reveal {
             opacity: 0;
             transform: translateY(40px);
@@ -874,115 +1059,309 @@
             opacity: 1;
             transform: translateY(0);
         }
+        .reveal-delay-1 {
+            transition-delay: 0.08s;
+        }
+        .reveal-delay-2 {
+            transition-delay: 0.16s;
+        }
+        .reveal-delay-3 {
+            transition-delay: 0.24s;
+        }
+        .reveal-delay-4 {
+            transition-delay: 0.32s;
+        }
 
         /* ---------- Responsive ---------- */
         @media (max-width: 1024px) {
-            .hero h1 { font-size: 2.8rem; }
-            .hero .container { gap: 30px; }
-            .hero-tools-preview { max-width: 320px; }
-            .tools-grid { gap: 18px; }
-            .steps-grid { gap: 16px; }
-            .hero-visual .orb { width: 260px; height: 260px; }
-            .hero-visual .orb:nth-child(2) { width: 180px; height: 180px; }
+            .hero h1 {
+                font-size: 3.2rem;
+            }
+            .hero .container {
+                gap: 30px;
+            }
+            .hero-tools-preview {
+                max-width: 340px;
+            }
+            .tools-grid {
+                gap: 18px;
+            }
+            .steps-grid {
+                gap: 16px;
+            }
         }
 
         @media (max-width: 900px) {
-            .hero .container { grid-template-columns: 1fr; text-align: center; }
-            .hero-content { order: 2; }
-            .hero-visual { order: 1; }
-            .hero p { margin-left: auto; margin-right: auto; }
-            .hero-actions { justify-content: center; }
-            .hero-tools-preview { max-width: 360px; margin: 0 auto; }
-            .hero h1 { font-size: 2.4rem; }
-            .steps-grid { grid-template-columns: repeat(2, 1fr); }
-            footer .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
-            /* 2 columns on tablet for tools */
-            .tools-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero .container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .hero-content {
+                order: 2;
+            }
+            .hero-visual {
+                order: 1;
+            }
+            .hero p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .hero-actions {
+                justify-content: center;
+            }
+            .hero-tools-preview {
+                max-width: 360px;
+                margin: 0 auto;
+            }
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            .hero::before,
+            .hero::after {
+                display: none;
+            }
+            .steps-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            footer .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 28px;
+            }
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 700px) {
             .nav-links {
                 position: fixed;
-                top: 70px;
+                top: 72px;
                 left: 0;
                 width: 100%;
-                background: rgba(255, 255, 255, 0.96);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
+                background: var(--card-bg);
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
                 flex-direction: column;
                 padding: 30px 24px 40px;
                 gap: 20px;
-                border-bottom: 1px solid var(--border);
+                border-bottom: 1px solid var(--card-border);
                 transform: translateY(-120%);
                 transition: transform 0.35s ease;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
             }
-            .nav-links.open { transform: translateY(0); }
-            .hamburger { display: flex; }
-            .hero { padding: 100px 0 40px; }
-            .hero h1 { font-size: 2rem; }
-            .hero p { font-size: 1rem; }
+            .nav-links.open {
+                transform: translateY(0);
+            }
+            .hamburger {
+                display: flex;
+            }
+            .hero {
+                padding: 110px 0 40px;
+                min-height: auto;
+            }
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            .hero p {
+                font-size: 1rem;
+            }
             .hero-tools-preview {
                 grid-template-columns: 1fr 1fr 1fr;
-                gap: 8px;
+                gap: 10px;
                 max-width: 100%;
             }
-            .hero-tool-card { padding: 12px 6px; }
-            .hero-tool-card .icon-wrap { width: 34px; height: 34px; font-size: 1rem; }
-            .hero-tool-card h4 { font-size: 0.7rem; }
-            .hero-tool-card p { display: none; }
+            .hero-tool-card {
+                padding: 14px 8px;
+            }
+            .hero-tool-card:nth-child(2),
+            .hero-tool-card:nth-child(3) {
+                margin-top: 0;
+            }
+            .hero-tool-card .icon-wrap {
+                width: 38px;
+                height: 38px;
+                font-size: 1rem;
+                border-radius: 12px;
+            }
+            .hero-tool-card h4 {
+                font-size: 0.7rem;
+            }
+            .hero-tool-card p {
+                display: none;
+            }
 
-            /* tools: 2 columns on small screens */
-            .tools-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 14px;
+            }
+            .tool-card {
+                padding: 22px 14px 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .tool-card .icon-box {
+                width: 64px;
+                height: 64px;
+                font-size: 1.6rem;
+                margin-bottom: 12px;
+                border-radius: 16px;
+            }
+            .tool-card h3 {
+                font-size: 0.95rem;
+                margin-bottom: 4px;
+            }
+            .tool-card p {
+                font-size: 0.75rem;
+                margin-bottom: 14px;
+                line-height: 1.4;
+            }
+            .tool-card .btn-tool {
+                font-size: 0.7rem;
+                padding: 6px 16px;
+            }
 
-            .tool-card { padding: 22px 14px 20px; display: flex; flex-direction: column; align-items: center; }
-            .tool-card .icon-box { width: 68px; height: 68px; font-size: 1.8rem; margin-bottom: 12px; border-radius: 18px; }
-            .tool-card h3 { font-size: 1rem; margin-bottom: 4px; }
-            .tool-card p { font-size: 0.75rem; margin-bottom: 14px; line-height: 1.4; }
-            .tool-card .btn-tool { font-size: 0.75rem; padding: 6px 16px; }
-
-            .steps-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-            .step-card { padding: 20px 12px 18px; }
-            .section-title { font-size: 1.6rem; }
-            .marketplace-logos { gap: 14px 24px; }
-            .marketplace-item { font-size: 0.85rem; padding: 4px 10px; }
-            .marketplace-item i { font-size: 1.2rem; }
-            footer .footer-grid { grid-template-columns: 1fr; gap: 24px; text-align: center; }
-            footer .brand p { margin-left: auto; margin-right: auto; }
-            footer .bottom { flex-direction: column; gap: 4px; }
+            .steps-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .step-card {
+                padding: 20px 14px 18px;
+            }
+            .section-title {
+                font-size: 1.8rem;
+            }
+            .marketplace-logos {
+                gap: 14px 20px;
+            }
+            .marketplace-item {
+                font-size: 0.85rem;
+                padding: 6px 12px;
+            }
+            .marketplace-item i {
+                font-size: 1.2rem;
+            }
+            footer .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                text-align: center;
+            }
+            footer .brand p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            footer .bottom {
+                flex-direction: column;
+                gap: 4px;
+            }
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 42px;
+                height: 42px;
+                font-size: 1rem;
+            }
         }
 
         @media (max-width: 450px) {
-            .hero h1 { font-size: 1.6rem; }
-            .hero-actions { flex-direction: column; width: 100%; }
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
+            }
             .hero-actions .btn-primary,
-            .hero-actions .btn-outline { width: 100%; justify-content: center; }
-            .steps-grid { grid-template-columns: 1fr; max-width: 300px; margin-left: auto; margin-right: auto; }
-            .tools-grid { gap: 10px; grid-template-columns: 1fr 1fr; } /* keep 2 cols even on very small */
-            .tool-card { padding: 16px 10px 16px; }
-            .tool-card .icon-box { width: 56px; height: 56px; font-size: 1.4rem; margin-bottom: 8px; border-radius: 14px; }
-            .tool-card h3 { font-size: 0.85rem; }
-            .tool-card p { font-size: 0.65rem; margin-bottom: 10px; }
-            .tool-card .btn-tool { font-size: 0.65rem; padding: 4px 12px; }
-            .container { padding: 0 12px; }
-            .hero-tools-preview { grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
-            .hero-tool-card { padding: 8px 4px; }
-            .hero-tool-card .icon-wrap { width: 28px; height: 28px; font-size: 0.8rem; }
-            .hero-tool-card h4 { font-size: 0.6rem; }
+            .hero-actions .btn-outline {
+                width: 100%;
+                justify-content: center;
+            }
+            .steps-grid {
+                grid-template-columns: 1fr;
+                max-width: 300px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .tools-grid {
+                gap: 10px;
+                grid-template-columns: 1fr 1fr;
+            }
+            .tool-card {
+                padding: 16px 10px 16px;
+            }
+            .tool-card .icon-box {
+                width: 52px;
+                height: 52px;
+                font-size: 1.3rem;
+                margin-bottom: 8px;
+                border-radius: 12px;
+            }
+            .tool-card h3 {
+                font-size: 0.8rem;
+            }
+            .tool-card p {
+                font-size: 0.6rem;
+                margin-bottom: 10px;
+            }
+            .tool-card .btn-tool {
+                font-size: 0.6rem;
+                padding: 4px 12px;
+            }
+            .container {
+                padding: 0 14px;
+            }
+            .hero-tools-preview {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 6px;
+            }
+            .hero-tool-card {
+                padding: 10px 4px;
+            }
+            .hero-tool-card .icon-wrap {
+                width: 30px;
+                height: 30px;
+                font-size: 0.75rem;
+                border-radius: 8px;
+            }
+            .hero-tool-card h4 {
+                font-size: 0.55rem;
+            }
+            .section-title {
+                font-size: 1.4rem;
+            }
+            .section-sub {
+                font-size: 0.9rem;
+            }
+            .badge {
+                font-size: 0.6rem;
+                padding: 4px 12px 4px 10px;
+            }
         }
 
         @media (min-width: 701px) and (max-width: 1024px) {
-            .tools-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; } /* 2 cols on tablet */
-            .tool-card { padding: 24px 16px 20px; }
-            .tool-card .icon-box { width: 76px; height: 76px; font-size: 2rem; }
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 18px;
+            }
+            .tool-card {
+                padding: 26px 18px 22px;
+            }
+            .tool-card .icon-box {
+                width: 72px;
+                height: 72px;
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
 <body>
 
+    <!-- Scroll Progress -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+
     <!-- Preloader -->
     <div class="preloader" id="preloader">
-        <div class="spinner"></div>
+        <div class="loader-ring"></div>
     </div>
 
     <!-- Navigation -->
@@ -998,14 +1377,23 @@
                 <li><a href="#marketplaces">Marketplaces</a></li>
                 <li><a href="#tools" class="nav-cta">Get Started</a></li>
             </ul>
-            <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-                <span></span><span></span><span></span>
-            </button>
+            <div class="nav-right">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-sun"></i>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
         </div>
     </nav>
 
     <!-- Hero -->
     <section class="hero" id="hero">
+        <!-- Particles -->
+        <div class="particles" id="particles"></div>
+
         <div class="container">
             <div class="hero-content">
                 <div class="hero-badge">
@@ -1015,11 +1403,11 @@
                 <h1>
                     Simple Tools for<br />
                     <span class="highlight">Better E‑commerce</span><br />
-                    Product Listings
+                    Product Images
                 </h1>
                 <p>
-                    Resize, watermark, and mirror your product images quickly
-                    for Amazon, Flipkart, Myntra, Snapdeal, and other marketplaces.
+                    Resize, watermark, mirror, and remove logos from your product images
+                    quickly for Amazon, Flipkart, Myntra, Snapdeal, and other marketplaces.
                 </p>
                 <div class="hero-actions">
                     <a href="#tools" class="btn-primary">
@@ -1031,8 +1419,8 @@
                 </div>
             </div>
             <div class="hero-visual">
-                <div class="orb"></div>
-                <div class="orb"></div>
+                <div class="orb-bg"></div>
+                <div class="orb-bg"></div>
                 <div class="hero-tools-preview">
                     <div class="hero-tool-card">
                         <div class="icon-wrap"><i class="fas fa-arrows-up-down-left-right"></i></div>
@@ -1040,7 +1428,7 @@
                         <p>Fit any listing</p>
                     </div>
                     <div class="hero-tool-card">
-                        <div class="icon-wrap"><i class="fas fa-copyright"></i></div>
+                        <div class="icon-wrap"><i class="fas fa-stamp"></i></div>
                         <h4>Watermark</h4>
                         <p>Protect your work</p>
                     </div>
@@ -1058,14 +1446,14 @@
     <section class="tools" id="tools">
         <div class="container text-center">
             <span class="badge"><i class="fas fa-cubes"></i> Our Tools</span>
-            <h2 class="section-title reveal">Everything you need,<br />right here.</h2>
+            <h2 class="section-title reveal">Everything you need,<br /><span class="highlight">right here.</span></h2>
             <p class="section-sub reveal">
                 Four powerful image editing tools built specifically for
                 e-commerce sellers. No clutter, no complexity.
             </p>
             <div class="tools-grid">
                 <!-- Tool 1: Image Resize -->
-                <div class="tool-card reveal" style="transition-delay:0.05s;">
+                <div class="tool-card reveal reveal-delay-1">
                     <div class="icon-box icon-resize">
                         <span class="ring-pulse"></span>
                         <span class="icon-inner"><i class="fas fa-arrows-up-down-left-right"></i></span>
@@ -1076,7 +1464,7 @@
                 </div>
 
                 <!-- Tool 2: Watermark -->
-                <div class="tool-card reveal" style="transition-delay:0.15s;">
+                <div class="tool-card reveal reveal-delay-2">
                     <div class="icon-box icon-watermark">
                         <span class="ring-pulse"></span>
                         <span class="icon-inner"><i class="fas fa-stamp"></i></span>
@@ -1087,7 +1475,7 @@
                 </div>
 
                 <!-- Tool 3: Mirror Image -->
-                <div class="tool-card reveal" style="transition-delay:0.25s;">
+                <div class="tool-card reveal reveal-delay-3">
                     <div class="icon-box icon-mirror">
                         <span class="ring-pulse"></span>
                         <span class="icon-inner"><i class="fas fa-arrow-right-arrow-left"></i></span>
@@ -1097,14 +1485,14 @@
                     <a href="Mirror Tool.html" class="btn-tool">Use Tool <i class="fas fa-arrow-right"></i></a>
                 </div>
 
-                <!-- Tool 4: Logo remover (NOW INSIDE THE GRID) -->
-                <div class="tool-card reveal" style="transition-delay:0.35s;">
+                <!-- Tool 4: Logo Remover -->
+                <div class="tool-card reveal reveal-delay-4">
                     <div class="icon-box icon-eraser">
                         <span class="ring-pulse"></span>
                         <span class="icon-inner"><i class="fas fa-eraser"></i></span>
                     </div>
-                    <h3>Logo remover</h3>
-                    <p>Easily remove logos, watermarks, and unwanted text from your images with AI-powered inpainting.</p>
+                    <h3>Logo Remover</h3>
+                    <p>Easily remove logos, watermarks, and unwanted text with AI-powered inpainting.</p>
                     <a href="Logo remover .html" class="btn-tool">Use Tool <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
@@ -1115,27 +1503,27 @@
     <section class="how-it-works" id="how-it-works">
         <div class="container text-center">
             <span class="badge"><i class="fas fa-route"></i> How It Works</span>
-            <h2 class="section-title reveal">Get your images ready in 4 simple steps</h2>
+            <h2 class="section-title reveal">Get your images ready in <span class="highlight">4 simple steps</span></h2>
             <p class="section-sub reveal">
                 From upload to download — no design skills needed.
             </p>
             <div class="steps-grid">
-                <div class="step-card reveal" style="transition-delay:0.05s;">
+                <div class="step-card reveal reveal-delay-1">
                     <div class="step-number">1</div>
                     <h4>Choose a Tool</h4>
-                    <p>Select Resize, Watermark, or Mirror Image.</p>
+                    <p>Select Resize, Watermark, Mirror, or Logo Remover.</p>
                 </div>
-                <div class="step-card reveal" style="transition-delay:0.15s;">
+                <div class="step-card reveal reveal-delay-2">
                     <div class="step-number">2</div>
                     <h4>Upload Your Image</h4>
                     <p>Upload the product image you want to edit.</p>
                 </div>
-                <div class="step-card reveal" style="transition-delay:0.25s;">
+                <div class="step-card reveal reveal-delay-3">
                     <div class="step-number">3</div>
                     <h4>Customize</h4>
                     <p>Choose settings and make the desired changes.</p>
                 </div>
-                <div class="step-card reveal" style="transition-delay:0.35s;">
+                <div class="step-card reveal reveal-delay-4">
                     <div class="step-number">4</div>
                     <h4>Download</h4>
                     <p>Download your final image and use it for your listing.</p>
@@ -1148,7 +1536,7 @@
     <section class="marketplaces" id="marketplaces">
         <div class="container text-center">
             <span class="badge"><i class="fas fa-store"></i> Compatible With</span>
-            <h2 class="section-title reveal">Trusted by sellers on leading marketplaces</h2>
+            <h2 class="section-title reveal">Trusted by sellers on <span class="highlight">leading marketplaces</span></h2>
             <p class="section-sub reveal">
                 Our tools work perfectly for product images on any platform.
             </p>
@@ -1175,19 +1563,19 @@
                 <div>
                     <h4>Tools</h4>
                     <ul>
-                        <li><a href="#">Image Resize</a></li>
-                        <li><a href="#">Watermark</a></li>
-                        <li><a href="#">Mirror Image</a></li>
-                        <li><a href="#">Logo Remover</a></li>
+                        <li><a href="Smart Image Fit & Resize.html">Image Resize</a></li>
+                        <li><a href="Image_Watermark.html">Watermark</a></li>
+                        <li><a href="Mirror Tool.html">Mirror Image</a></li>
+                        <li><a href="Logo remover .html">Logo Remover</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4>Marketplaces</h4>
                     <ul>
-                        <li><a href="#">Amazon</a></li>
-                        <li><a href="#">Flipkart</a></li>
-                        <li><a href="#">Myntra</a></li>
-                        <li><a href="#">Snapdeal</a></li>
+                        <li><a href="#marketplaces">Amazon</a></li>
+                        <li><a href="#marketplaces">Flipkart</a></li>
+                        <li><a href="#marketplaces">Myntra</a></li>
+                        <li><a href="#marketplaces">Snapdeal</a></li>
                     </ul>
                 </div>
             </div>
@@ -1197,13 +1585,40 @@
         </div>
     </footer>
 
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
     <script>
-        // Preloader
+        // ─── Preloader ──────────────────────────────────────────────
         window.addEventListener('load', () => {
             document.getElementById('preloader').classList.add('hidden');
         });
 
-        // Mobile Nav
+        // ─── Scroll Progress ────────────────────────────────────────
+        const scrollProgress = document.getElementById('scrollProgress');
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            scrollProgress.style.width = progress + '%';
+        });
+
+        // ─── Theme Toggle ──────────────────────────────────────────
+        const themeToggle = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // ─── Mobile Nav ─────────────────────────────────────────────
         const hamburger = document.getElementById('hamburger');
         const navLinks = document.getElementById('navLinks');
 
@@ -1219,7 +1634,20 @@
             });
         });
 
-        // Scroll Reveal
+        // ─── Back to Top ────────────────────────────────────────────
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ─── Scroll Reveal ──────────────────────────────────────────
         const reveals = document.querySelectorAll('.reveal');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -1228,24 +1656,22 @@
                 }
             });
         }, {
-            threshold: 0.15,
+            threshold: 0.12,
             rootMargin: '0px 0px -30px 0px'
         });
         reveals.forEach(el => observer.observe(el));
 
-        // Nav background
+        // ─── Nav Background ─────────────────────────────────────────
         const navbar = document.getElementById('navbar');
         window.addEventListener('scroll', () => {
             if (window.scrollY > 20) {
-                navbar.style.background = 'rgba(255,255,255,0.88)';
-                navbar.style.boxShadow = '0 2px 24px rgba(0,0,0,0.04)';
+                navbar.style.boxShadow = '0 2px 32px rgba(0,0,0,0.06)';
             } else {
-                navbar.style.background = 'rgba(255,255,255,0.72)';
                 navbar.style.boxShadow = 'none';
             }
         });
 
-        // Smooth anchor scroll
+        // ─── Smooth Anchor Scroll ──────────────────────────────────
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 const href = this.getAttribute('href');
@@ -1259,23 +1685,46 @@
             });
         });
 
-        // Hero tilt
+        // ─── Hero Tilt ──────────────────────────────────────────────
         const heroVisual = document.querySelector('.hero-visual');
+        const heroSection = document.querySelector('.hero');
         if (heroVisual && window.innerWidth > 768) {
-            document.querySelector('.hero').addEventListener('mousemove', (e) => {
+            heroSection.addEventListener('mousemove', (e) => {
                 const rect = heroVisual.getBoundingClientRect();
                 const x = (e.clientX - rect.left) / rect.width - 0.5;
                 const y = (e.clientY - rect.top) / rect.height - 0.5;
-                heroVisual.style.transform = `perspective(800px) rotateY(${x * 4}deg) rotateX(${-y * 4}deg)`;
+                heroVisual.style.transform =
+                    `perspective(800px) rotateY(${x * 3}deg) rotateX(${-y * 3}deg)`;
             });
-            document.querySelector('.hero').addEventListener('mouseleave', () => {
+            heroSection.addEventListener('mouseleave', () => {
                 heroVisual.style.transform = 'perspective(800px) rotateY(0deg) rotateX(0deg)';
                 heroVisual.style.transition = 'transform 0.6s ease';
                 setTimeout(() => { heroVisual.style.transition = ''; }, 600);
             });
         }
 
-        console.log('🚀 E-Commerce Tools — Logo remover fixed & grid now has 4 columns!');
+        // ─── Particles ──────────────────────────────────────────────
+        (function createParticles() {
+            const container = document.getElementById('particles');
+            const colors = ['#6c5ce7', '#fd79a8', '#00b894', '#fdcb6e', '#a29bfe'];
+            for (let i = 0; i < 20; i++) {
+                const el = document.createElement('div');
+                el.className = 'particle';
+                const size = 4 + Math.random() * 8;
+                el.style.width = size + 'px';
+                el.style.height = size + 'px';
+                el.style.left = Math.random() * 100 + '%';
+                el.style.background = colors[Math.floor(Math.random() * colors.length)];
+                el.style.opacity = 0.03 + Math.random() * 0.05;
+                el.style.animationDuration = 15 + Math.random() * 20 + 's';
+                el.style.animationDelay = Math.random() * 15 + 's';
+                container.appendChild(el);
+            }
+        })();
+
+        console.log('🚀 E-Commerce Tools — All bugs fixed & design upgraded!');
+        console.log('✨ Features: Dark mode, scroll progress, particles, back to top, and more.');
     </script>
+
 </body>
 </html>
