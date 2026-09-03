@@ -1,201 +1,294 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Image Watermark · ImageTools</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js">
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
     <style>
-        * {
+        /* ── reset & base ── */
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
         :root {
-            --primary: #1a2a3a;
+            --primary: #0f1a2b;
+            --primary-light: #1a2a3a;
             --accent: #00b894;
-            --accent-dark: #00a381;
-            --bg: #f5f7fa;
+            --accent-dark: #00997a;
+            --accent-glow: rgba(0, 184, 148, .25);
+            --bg: #f0f4f9;
             --white: #fff;
-            --gray-100: #f0f2f5;
-            --gray-200: #e2e6ed;
-            --gray-300: #c8cdd8;
-            --gray-400: #a8aeb8;
-            --gray-500: #7a8290;
-            --gray-600: #4a5260;
-            --gray-700: #2d3645;
-            --shadow: 0 4px 20px rgba(0, 0, 0, .08);
-            --radius: 16px;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f4f9;
+            --gray-200: #e2e7ef;
+            --gray-300: #c8cfdb;
+            --gray-400: #9aa3b3;
+            --gray-500: #6b7588;
+            --gray-600: #455063;
+            --gray-700: #293241;
+            --gray-800: #1a2330;
+            --shadow: 0 8px 32px rgba(0, 0, 0, .06);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, .10);
+            --radius: 18px;
             --radius-sm: 10px;
-            --font: Inter, Arial, sans-serif;
+            --font: 'Inter', -apple-system, system-ui, sans-serif;
+            --transition: .22s ease;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
             min-height: 100vh;
-            padding: 24px 20px 40px;
+            padding: 28px 24px 48px;
             background: var(--bg);
             color: var(--gray-700);
             font-family: var(--font);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
 
         .app {
-            width: min(1200px, 100%);
-            margin: auto;
+            width: min(1240px, 100%);
+            margin: 0 auto;
         }
 
+        /* ── scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
+
+        /* ── header ── */
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 20px;
             flex-wrap: wrap;
-            padding: 18px 26px;
-            margin-bottom: 28px;
-            color: var(--white);
+            padding: 16px 28px 16px 24px;
+            margin-bottom: 32px;
             background: var(--primary);
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
         }
 
-        .brand,
-        .brand h1,
-        .header-actions,
-        .badges {
-            display: flex;
-            align-items: center;
+        .header::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(0, 184, 148, .08) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .brand {
-            gap: 14px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-decoration: none;
+            z-index: 1;
+            flex-shrink: 0;
         }
 
-        .brand h1 {
-            gap: 10px;
-            font-size: 22px;
-            color: var(--white);
-        }
-
-        .brand h1 span {
-            color: var(--accent);
-        }
-
-        .logo {
+        .brand-logo {
             display: grid;
-            width: 44px;
-            height: 44px;
+            width: 52px;
+            height: 52px;
             place-items: center;
-            color: var(--white);
-            background: var(--accent);
-            border-radius: 12px;
-            font-size: 20px;
+            background: linear-gradient(145deg, var(--accent), var(--accent-dark));
+            border-radius: 14px;
+            font-size: 24px;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(0, 184, 148, .35);
+            transition: transform var(--transition), box-shadow var(--transition);
+            flex-shrink: 0;
         }
 
-        .tool-badge,
-        .badge {
-            padding: 5px 12px;
-            color: rgba(255, 255, 255, .8);
-            background: rgba(255, 255, 255, .12);
+        .brand:hover .brand-logo {
+            transform: scale(1.04) rotate(-2deg);
+            box-shadow: 0 6px 24px rgba(0, 184, 148, .45);
+        }
+
+        .brand-text {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 6px 12px;
+        }
+
+        .brand-text h1 {
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--white);
+            letter-spacing: -0.5px;
+        }
+
+        .brand-text h1 span {
+            color: var(--accent);
+            font-weight: 800;
+        }
+
+        .brand-badge {
+            padding: 4px 14px;
+            background: rgba(255, 255, 255, .10);
+            border: 1px solid rgba(255, 255, 255, .08);
             border-radius: 999px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
+            color: rgba(255, 255, 255, .75);
+            letter-spacing: .3px;
+            text-transform: uppercase;
+            white-space: nowrap;
         }
 
-        .header-actions {
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .home-link {
-            color: var(--white);
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .home-link:hover {
-            color: var(--accent);
-        }
-
-        .badges {
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .badge i {
+        .brand-badge i {
             margin-right: 5px;
             color: var(--accent);
         }
 
-        .badge.private {
-            color: var(--accent);
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            z-index: 1;
         }
 
+        .header-actions .home-link {
+            color: rgba(255, 255, 255, .7);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .header-actions .home-link:hover {
+            color: var(--white);
+            background: rgba(255, 255, 255, .08);
+        }
+
+        .badge-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 5px 14px;
+            background: rgba(255, 255, 255, .08);
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .75);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .badge i {
+            color: var(--accent);
+            font-size: 11px;
+        }
+
+        .badge.accent {
+            color: var(--accent);
+            background: rgba(0, 184, 148, .18);
+        }
+
+        /* ── grid ── */
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 28px;
+            gap: 30px;
         }
 
         .panel {
-            padding: 24px 26px 28px;
+            padding: 26px 28px 30px;
             background: var(--white);
             border: 1px solid var(--gray-200);
             border-radius: var(--radius);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
+            box-shadow: var(--shadow);
+            transition: box-shadow var(--transition);
+        }
+
+        .panel:hover {
+            box-shadow: var(--shadow-lg);
         }
 
         .panel-title {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 18px;
-            color: var(--primary);
+            margin-bottom: 20px;
             font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .panel-title i {
+            color: var(--accent);
+            font-size: 16px;
+        }
+
+        .panel-title .count {
+            margin-left: auto;
+            padding: 3px 14px;
+            background: #e6f9f4;
+            color: var(--accent-dark);
+            border-radius: 999px;
+            font-size: 13px;
             font-weight: 700;
         }
 
-        .panel-title i,
-        .label i,
-        .section-title i {
-            color: var(--accent);
-        }
-
-        .count {
-            margin-left: auto;
-            padding: 4px 12px;
-            color: var(--accent);
-            background: #e6f9f4;
-            border-radius: 999px;
-            font-size: 13px;
-        }
-
-        .upload {
+        /* ── upload ── */
+        .upload-area {
             position: relative;
-            padding: 32px 20px;
+            padding: 34px 20px 30px;
             text-align: center;
-            background: var(--gray-100);
+            background: var(--gray-50);
             border: 2px dashed var(--gray-300);
             border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: .2s;
+            transition: var(--transition);
         }
 
-        .upload:hover,
-        .upload.dragover,
-        .mini-upload:hover {
+        .upload-area:hover,
+        .upload-area.dragover {
             background: #e6f9f4;
             border-color: var(--accent);
+            box-shadow: inset 0 0 0 3px var(--accent-glow);
         }
 
-        .upload input,
-        .mini-upload input {
+        .upload-area input[type="file"] {
             position: absolute;
             inset: 0;
             width: 100%;
@@ -204,62 +297,122 @@
             cursor: pointer;
         }
 
-        .upload-icon {
+        .upload-area .icon {
             display: block;
             margin-bottom: 8px;
             color: var(--gray-400);
-            font-size: 36px;
+            font-size: 40px;
+            transition: var(--transition);
         }
 
-        .upload strong {
+        .upload-area:hover .icon {
             color: var(--accent);
+            transform: translateY(-2px);
         }
 
-        .hint,
-        .small {
-            margin-top: 5px;
-            color: var(--gray-500);
+        .upload-area strong {
+            color: var(--accent-dark);
+        }
+
+        .upload-area .hint {
+            margin-top: 6px;
+            color: var(--gray-400);
             font-size: 12px;
+        }
+
+        /* ── file list ── */
+        .file-list-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
         }
 
         .file-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            max-height: 105px;
-            margin-top: 14px;
-            overflow: auto;
+            gap: 6px;
+            max-height: 92px;
+            overflow-y: auto;
+            flex: 1;
+            padding: 2px 0;
         }
 
         .file-tag {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 7px;
-            padding: 5px 10px;
-            color: var(--gray-700);
+            gap: 6px;
+            padding: 4px 10px 4px 12px;
             background: var(--gray-100);
             border-radius: 999px;
             font-size: 12px;
+            color: var(--gray-700);
+            white-space: nowrap;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .remove {
+        .file-tag .remove {
             color: #dc2626;
             cursor: pointer;
             font-weight: 700;
+            font-size: 14px;
+            line-height: 1;
+            padding: 0 2px;
+            transition: var(--transition);
         }
 
-        .status {
-            margin: 12px 0 20px;
-            font-size: 13px;
+        .file-tag .remove:hover {
+            color: #b91c1c;
+            transform: scale(1.2);
         }
 
-        .status b {
-            padding: 5px 12px;
-            color: var(--accent);
-            background: #e6f9f4;
+        .clear-all-btn {
+            flex-shrink: 0;
+            padding: 4px 14px;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: none;
             border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: var(--font);
         }
 
+        .clear-all-btn:hover:not(:disabled) {
+            background: #fecaca;
+            transform: scale(1.02);
+        }
+
+        .clear-all-btn:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0 18px;
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+
+        .status-bar b {
+            padding: 3px 14px;
+            background: #e6f9f4;
+            color: var(--accent-dark);
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        /* ── controls ── */
         .control {
             margin-top: 20px;
         }
@@ -268,50 +421,110 @@
             margin-top: 0;
         }
 
-        .label {
+        .label-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 7px;
-            color: var(--gray-700);
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .label-row label {
             font-size: 13px;
             font-weight: 600;
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .value {
-            padding: 4px 10px;
+        .label-row label i {
             color: var(--accent);
-            background: #e6f9f4;
-            border-radius: 999px;
+            font-size: 13px;
         }
 
-        input[type="range"],
-        select {
-            width: 100%;
+        .label-row .value {
+            padding: 2px 12px;
+            background: #e6f9f4;
+            color: var(--accent-dark);
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            min-width: 36px;
+            text-align: center;
         }
 
         input[type="range"] {
-            accent-color: var(--accent);
+            width: 100%;
+            height: 5px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gray-200);
+            border-radius: 8px;
+            outline: none;
+            transition: background var(--transition);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 184, 148, .35);
+            transition: var(--transition);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.12);
+            box-shadow: 0 4px 16px rgba(0, 184, 148, .45);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 184, 148, .35);
         }
 
         select {
-            padding: 10px 12px;
-            color: var(--gray-700);
+            width: 100%;
+            padding: 10px 14px;
             background: var(--white);
             border: 1px solid var(--gray-200);
             border-radius: var(--radius-sm);
             font: inherit;
+            font-size: 13px;
+            color: var(--gray-700);
+            outline: none;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
         .section-title {
             display: flex;
             align-items: center;
-            gap: 9px;
+            gap: 8px;
             margin-bottom: 10px;
             font-size: 14px;
             font-weight: 700;
+            color: var(--gray-700);
         }
 
-        .optional {
+        .section-title i {
+            color: var(--accent);
+        }
+
+        .section-title .optional {
             margin-left: auto;
             color: var(--gray-400);
             font-size: 11px;
@@ -327,20 +540,40 @@
         .mini-upload {
             position: relative;
             flex: 1;
-            padding: 12px;
+            padding: 12px 16px;
             text-align: center;
-            background: var(--gray-100);
+            background: var(--gray-50);
             border: 1px dashed var(--gray-300);
             border-radius: var(--radius-sm);
             font-size: 13px;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mini-upload:hover {
+            background: #e6f9f4;
+            border-color: var(--accent);
+            color: var(--accent-dark);
+        }
+
+        .mini-upload input[type="file"] {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
             cursor: pointer;
         }
 
         .wm-status {
             min-width: 120px;
-            color: var(--accent);
             font-size: 12px;
             font-weight: 600;
+            color: var(--accent-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .wm-status.empty {
@@ -348,45 +581,72 @@
             font-weight: 400;
         }
 
+        /* ── custom position ── */
         .custom-position {
             display: none;
             margin-top: 14px;
-            padding: 12px;
-            background: var(--gray-100);
+            padding: 16px 16px 12px;
+            background: var(--gray-50);
             border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-200);
         }
 
         .custom-position.visible {
             display: block;
         }
 
-        button {
+        .custom-position .small {
+            margin-top: 8px;
+            color: var(--gray-400);
+            font-size: 11px;
+            text-align: center;
+        }
+
+        /* ── process button ── */
+        .process-btn {
             width: 100%;
-            margin-top: 24px;
-            padding: 15px;
+            margin-top: 26px;
+            padding: 16px 20px;
+            background: linear-gradient(145deg, var(--accent), var(--accent-dark));
             color: var(--white);
-            background: var(--accent);
-            border: 0;
+            border: none;
             border-radius: var(--radius-sm);
             font: inherit;
+            font-size: 15px;
             font-weight: 700;
             cursor: pointer;
-            transition: .2s;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(0, 184, 148, .25);
         }
 
-        button:hover:not(:disabled) {
-            background: var(--accent-dark);
-            transform: translateY(-1px);
+        .process-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0, 184, 148, .35);
         }
 
-        button:disabled {
+        .process-btn:disabled {
             opacity: .5;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
+        .process-btn i {
+            font-size: 16px;
+        }
+
+        /* ── progress ── */
         .progress {
             display: none;
-            margin-top: 14px;
+            margin-top: 16px;
+            padding: 14px 16px;
+            background: var(--gray-50);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-200);
         }
 
         .progress.visible {
@@ -401,10 +661,11 @@
         }
 
         .progress-fill {
-            width: 0;
+            width: 0%;
             height: 100%;
-            background: var(--accent);
-            transition: width .2s;
+            background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+            border-radius: 999px;
+            transition: width .25s ease;
         }
 
         .progress-info {
@@ -413,74 +674,113 @@
             margin-top: 6px;
             color: var(--gray-500);
             font-size: 12px;
+            font-weight: 500;
         }
 
-        .preview {
+        .progress-info #progressPercent {
+            color: var(--accent-dark);
+            font-weight: 700;
+        }
+
+        /* ── preview ── */
+        .preview-box {
             display: grid;
-            min-height: 350px;
-            margin-bottom: 16px;
+            min-height: 340px;
+            margin-bottom: 18px;
             place-items: center;
-            overflow: hidden;
-            background: var(--gray-100);
+            background: var(--gray-50);
             border: 1px solid var(--gray-200);
             border-radius: var(--radius-sm);
+            overflow: hidden;
+            position: relative;
         }
 
-        canvas {
+        .preview-box canvas {
             display: block;
             width: 100%;
             height: 100%;
-            max-height: 500px;
+            max-height: 480px;
             object-fit: contain;
-            background: white;
+            background: #fff;
+        }
+
+        .preview-box .empty-preview {
+            color: var(--gray-400);
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+        }
+        .preview-box .empty-preview i {
+            display: block;
+            font-size: 36px;
+            margin-bottom: 8px;
+            color: var(--gray-300);
+        }
+
+        /* ── thumbnails ── */
+        .thumbnails-wrap {
+            margin-top: 4px;
         }
 
         .thumbnails {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-            gap: 9px;
-            max-height: 220px;
-            overflow: auto;
+            gap: 10px;
+            max-height: 210px;
+            overflow-y: auto;
+            padding: 2px 0;
         }
 
         .thumbnail {
             position: relative;
-            aspect-ratio: 1;
+            aspect-ratio: 1/1;
             overflow: hidden;
             border: 2px solid var(--gray-200);
             border-radius: var(--radius-sm);
             cursor: pointer;
+            transition: var(--transition);
+            background: var(--gray-100);
+        }
+
+        .thumbnail:hover {
+            transform: scale(1.03);
+            border-color: var(--gray-300);
         }
 
         .thumbnail.active {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(0, 184, 148, .18);
+            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
         .thumbnail img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
 
-        .thumbnail span {
+        .thumbnail .badge-num {
             position: absolute;
             top: 3px;
             right: 3px;
-            padding: 2px 6px;
-            color: white;
+            padding: 1px 7px;
             background: rgba(0, 0, 0, .65);
+            color: #fff;
             border-radius: 999px;
             font-size: 10px;
+            font-weight: 700;
+            backdrop-filter: blur(4px);
         }
 
-        .empty {
-            padding: 30px 10px;
+        .thumbnails .empty {
+            grid-column: 1 / -1;
+            padding: 28px 10px;
             color: var(--gray-400);
             text-align: center;
             font-size: 13px;
         }
 
+        /* ── assets ── */
         .assets {
             display: grid;
             gap: 12px;
@@ -492,19 +792,21 @@
         .asset {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
         .asset-preview {
             display: grid;
-            width: 56px;
-            height: 56px;
+            width: 58px;
+            height: 58px;
             place-items: center;
             overflow: hidden;
             background: var(--gray-100);
             border: 1px solid var(--gray-200);
             border-radius: var(--radius-sm);
             color: var(--gray-400);
+            flex-shrink: 0;
+            font-size: 20px;
         }
 
         .asset-preview img {
@@ -513,55 +815,159 @@
             object-fit: contain;
         }
 
-        .footer {
-            margin-top: 28px;
-            padding-top: 20px;
+        .asset-info strong {
+            display: block;
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        .asset-info .small {
             color: var(--gray-400);
+            font-size: 12px;
+            margin-top: 1px;
+        }
+
+        /* ── footer ── */
+        .footer {
+            margin-top: 34px;
+            padding-top: 22px;
             border-top: 1px solid var(--gray-200);
             text-align: center;
-            font-size: 12px;
+            color: var(--gray-400);
+            font-size: 13px;
         }
 
         .footer i {
             color: var(--accent);
+            margin: 0 4px;
+        }
+
+        .footer .heart {
+            color: #ef4444;
+        }
+
+        /* ── responsive ── */
+        @media (max-width: 1024px) {
+            .grid {
+                gap: 22px;
+            }
         }
 
         @media (max-width: 900px) {
             .grid {
                 grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .header {
+                padding: 14px 20px;
+            }
+            .brand-text h1 {
+                font-size: 22px;
+            }
+            .brand-logo {
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
+            }
+            .brand-badge {
+                font-size: 10px;
+                padding: 3px 10px;
             }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 640px) {
             body {
-                padding: 14px;
+                padding: 14px 12px 32px;
             }
 
-            .header,
             .panel {
-                padding: 18px;
+                padding: 18px 16px 22px;
             }
 
-            .header-actions {
-                width: 100%;
-                justify-content: space-between;
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+                padding: 14px 16px;
             }
 
-            .brand h1 {
+            .brand-text h1 {
+                font-size: 19px;
+            }
+            .brand-logo {
+                width: 40px;
+                height: 40px;
                 font-size: 18px;
             }
 
-            .tool-badge {
+            .header-actions {
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .badge-group .badge:not(.accent) {
                 display: none;
             }
 
             .mini-row {
-                align-items: stretch;
                 flex-direction: column;
+                align-items: stretch;
             }
 
             .wm-status {
                 min-width: 0;
+                text-align: center;
+            }
+
+            .file-list-wrapper {
+                flex-wrap: wrap;
+            }
+
+            .file-list {
+                max-height: 70px;
+            }
+
+            .clear-all-btn {
+                padding: 4px 12px;
+                font-size: 11px;
+            }
+
+            .process-btn {
+                font-size: 14px;
+                padding: 14px 16px;
+            }
+
+            .preview-box {
+                min-height: 240px;
+            }
+            .preview-box canvas {
+                max-height: 320px;
+            }
+
+            .thumbnails {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+                gap: 7px;
+                max-height: 160px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .brand-text h1 {
+                font-size: 17px;
+            }
+            .brand-badge {
+                font-size: 9px;
+                padding: 2px 8px;
+            }
+            .brand-logo {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+            .badge {
+                font-size: 10px;
+                padding: 3px 10px;
             }
         }
     </style>
@@ -569,46 +975,67 @@
 
 <body>
     <main class="app">
+
+        <!-- ─── HEADER ─── -->
         <header class="header">
-            <a class="brand" href="index.html" aria-label="ImageTools home">
-                <span class="logo"><i class="fas fa-water"></i></span>
-                <h1>Image <span>Watermark</span> <small class="tool-badge">3000×3000</small></h1>
+            <a class="brand" href="#" aria-label="ImageTools home">
+                <span class="brand-logo"><i class="fas fa-water"></i></span>
+                <div class="brand-text">
+                    <h1>Image <span>Watermark</span></h1>
+                    <span class="brand-badge"><i class="fas fa-bolt"></i> 3000×3000</span>
+                </div>
             </a>
 
             <div class="header-actions">
-                <a class="home-link" href="index.html">
-                    <i class="fas fa-home"></i> Home
-                </a>
-                <div class="badges">
-                    <span class="badge"><i class="fas fa-bolt"></i> Batch</span>
-                    <span class="badge private"><i class="fas fa-lock"></i> Local</span>
-                    <span class="badge"><i class="fas fa-layer-group"></i> Full + Corner</span>
+                <a class="home-link" href="#"><i class="fas fa-home"></i> Home</a>
+                <div class="badge-group">
+                    <span class="badge"><i class="fas fa-layer-group"></i> Batch</span>
+                    <span class="badge accent"><i class="fas fa-lock"></i> Local</span>
+                    <span class="badge"><i class="fas fa-arrows-alt"></i> Full + Corner</span>
                 </div>
             </div>
         </header>
 
+        <!-- ─── GRID ─── -->
         <section class="grid">
+
+            <!-- ─── LEFT PANEL ─── -->
             <section class="panel">
                 <h2 class="panel-title">
                     <i class="fas fa-images"></i> Main Images
                     <span class="count" id="imageCount">0</span>
                 </h2>
 
-                <div class="upload" id="imageDrop">
-                    <span class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></span>
+                <!-- Upload -->
+                <div class="upload-area" id="imageDrop">
+                    <span class="icon"><i class="fas fa-cloud-upload-alt"></i></span>
                     <div>Drop images here or <strong>browse</strong></div>
                     <div class="hint">JPG, PNG, WebP · Batch upload</div>
-                    <input id="imageInput" type="file" accept="image/*" multiple>
+                    <input id="imageInput" type="file" accept="image/*" multiple />
                 </div>
 
-                <div class="file-list" id="fileList"></div>
-                <div class="status">Uploaded <b id="uploadedCount">0</b> images</div>
+                <!-- File list + Clear All -->
+                <div class="file-list-wrapper">
+                    <div class="file-list" id="fileList"></div>
+                    <button class="clear-all-btn" id="clearAllBtn" disabled>
+                        <i class="fas fa-trash-alt"></i> Clear All
+                    </button>
+                </div>
 
+                <div class="status-bar">
+                    Uploaded <b id="uploadedCount">0</b> images
+                </div>
+
+                <!-- Padding -->
                 <div class="control">
-                    <div class="label">White Padding <span class="value" id="paddingLabel">4%</span></div>
-                    <input id="padding" type="range" min="0" max="40" value="4">
+                    <div class="label-row">
+                        <label><i class="fas fa-expand"></i> White Padding</label>
+                        <span class="value" id="paddingLabel">4%</span>
+                    </div>
+                    <input id="padding" type="range" min="0" max="40" value="4" />
                 </div>
 
+                <!-- Full-screen watermark -->
                 <div class="control">
                     <div class="section-title">
                         <i class="fas fa-vector-square"></i> Full-Screen Watermark
@@ -617,14 +1044,18 @@
                     <div class="mini-row">
                         <label class="mini-upload">
                             <i class="fas fa-file-image"></i> Upload PNG
-                            <input id="fullInput" type="file" accept="image/png">
+                            <input id="fullInput" type="file" accept="image/png" />
                         </label>
                         <span class="wm-status empty" id="fullStatus">No file selected</span>
                     </div>
-                    <div class="label">Opacity <span class="value" id="opacityLabel">4%</span></div>
-                    <input id="opacity" type="range" min="0" max="100" value="4">
+                    <div class="label-row" style="margin-top:8px">
+                        <label><i class="fas fa-adjust"></i> Opacity</label>
+                        <span class="value" id="opacityLabel">4%</span>
+                    </div>
+                    <input id="opacity" type="range" min="0" max="100" value="4" />
                 </div>
 
+                <!-- Corner watermark -->
                 <div class="control">
                     <div class="section-title">
                         <i class="fas fa-thumbtack"></i> Corner Watermark
@@ -633,15 +1064,20 @@
                     <div class="mini-row">
                         <label class="mini-upload">
                             <i class="fas fa-file-image"></i> Upload PNG
-                            <input id="cornerInput" type="file" accept="image/png">
+                            <input id="cornerInput" type="file" accept="image/png" />
                         </label>
                         <span class="wm-status empty" id="cornerStatus">No file selected</span>
                     </div>
 
-                    <div class="label">Size <span class="value" id="cornerSizeLabel">28%</span></div>
-                    <input id="cornerSize" type="range" min="5" max="40" value="28">
+                    <div class="label-row" style="margin-top:8px">
+                        <label><i class="fas fa-arrows-alt-h"></i> Size</label>
+                        <span class="value" id="cornerSizeLabel">28%</span>
+                    </div>
+                    <input id="cornerSize" type="range" min="5" max="40" value="28" />
 
-                    <div class="label" style="margin-top:12px">Position</div>
+                    <div class="label-row" style="margin-top:12px">
+                        <label><i class="fas fa-location-dot"></i> Position</label>
+                    </div>
                     <select id="position">
                         <option value="top-left">Top Left</option>
                         <option value="top-right">Top Right</option>
@@ -651,39 +1087,42 @@
                     </select>
 
                     <div class="custom-position" id="customPosition">
-                        <div class="label">
-                            Horizontal Position
+                        <div class="label-row">
+                            <label>Horizontal</label>
                             <span class="value" id="customXLabel">97%</span>
                         </div>
-                        <input id="customX" type="range" min="0" max="100" value="97">
+                        <input id="customX" type="range" min="0" max="100" value="97" />
 
-                        <div class="label" style="margin-top:12px">
-                            Vertical Position
+                        <div class="label-row" style="margin-top:10px">
+                            <label>Vertical</label>
                             <span class="value" id="customYLabel">98%</span>
                         </div>
-                        <input id="customY" type="range" min="0" max="100" value="98">
+                        <input id="customY" type="range" min="0" max="100" value="98" />
 
-                        <div class="small">
-                            0% means left/top and 100% means right/bottom.
-                        </div>
+                        <div class="small">0% = left/top · 100% = right/bottom</div>
                     </div>
                 </div>
 
+                <!-- Output format -->
                 <div class="control">
-                    <div class="label">Output Format</div>
+                    <div class="label-row">
+                        <label><i class="fas fa-file-export"></i> Output Format</label>
+                    </div>
                     <select id="format">
                         <option value="image/png">PNG</option>
                         <option value="image/jpeg">JPEG</option>
                         <option value="image/webp">WebP</option>
                         <option value="image/bmp">BMP</option>
                     </select>
-                    <div class="small">JPEG and WebP use 92% quality.</div>
+                    <div class="hint" style="margin-top:4px">JPEG &amp; WebP use 92% quality.</div>
                 </div>
 
-                <button id="processButton" disabled>
+                <!-- Process -->
+                <button class="process-btn" id="processButton" disabled>
                     <i class="fas fa-images"></i> Upload images first
                 </button>
 
+                <!-- Progress -->
                 <div class="progress" id="progress">
                     <div class="progress-track">
                         <div class="progress-fill" id="progressFill"></div>
@@ -695,24 +1134,27 @@
                 </div>
             </section>
 
+            <!-- ─── RIGHT PANEL ─── -->
             <section class="panel">
                 <h2 class="panel-title">
                     <i class="fas fa-eye"></i> Live Preview
                     <span class="count" id="previewCount">0</span>
                 </h2>
 
-                <div class="preview">
+                <div class="preview-box">
                     <canvas id="canvas" width="500" height="500"></canvas>
                 </div>
 
-                <div class="panel-title">
-                    <i class="fas fa-th"></i> Uploaded Images
+                <div class="thumbnails-wrap">
+                    <div class="panel-title" style="margin-bottom:10px;font-size:14px">
+                        <i class="fas fa-th"></i> Uploaded Images
+                    </div>
+                    <div class="thumbnails" id="thumbnails">
+                        <div class="empty">Upload images to see previews.</div>
+                    </div>
                 </div>
 
-                <div class="thumbnails" id="thumbnails">
-                    <div class="empty">Upload images to see previews.</div>
-                </div>
-
+                <!-- Watermark assets -->
                 <div class="assets">
                     <div class="section-title">
                         <i class="fas fa-stamp"></i> Watermark Assets
@@ -722,7 +1164,7 @@
                         <div class="asset-preview" id="fullPreview">
                             <i class="fas fa-vector-square"></i>
                         </div>
-                        <div>
+                        <div class="asset-info">
                             <strong>Full-screen</strong>
                             <div class="small" id="fullInfo">Not set</div>
                         </div>
@@ -732,53 +1174,64 @@
                         <div class="asset-preview" id="cornerPreview">
                             <i class="fas fa-thumbtack"></i>
                         </div>
-                        <div>
+                        <div class="asset-info">
                             <strong>Corner</strong>
                             <div class="small" id="cornerInfo">Not set</div>
                         </div>
                     </div>
                 </div>
             </section>
+
         </section>
 
+        <!-- ─── FOOTER ─── -->
         <footer class="footer">
-            <i class="fas fa-shield-alt"></i>
-            All processing happens locally in your browser · No uploads · Free to use
+            <i class="fas fa-shield-alt"></i> All processing happens locally in your browser ·
+            <i class="fas fa-lock"></i> No uploads ·
+            <i class="fas fa-heart heart"></i> Free to use
         </footer>
+
     </main>
 
+    <!-- ─── SCRIPT ─── -->
     <script>
         (() => {
             'use strict';
 
+            // ── DOM refs ──
             const $ = id => document.getElementById(id);
-
-            const state = {
-                images: [],
-                full: null,
-                corner: null,
-                selected: 0,
-                busy: false
-            };
 
             const canvas = $('canvas');
             const ctx = canvas.getContext('2d');
+
             const OUTPUT_SIZE = 3000;
             const QUALITY = 0.92;
 
-            const readDataUrl = file => new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
+            // ── state ──
+            const state = {
+                images: [], // { file, src }
+                full: null, // { file, src, image }
+                corner: null, // { file, src, image }
+                selected: 0,
+                busy: false,
+            };
 
-            const loadImage = src => new Promise((resolve, reject) => {
-                const image = new Image();
-                image.onload = () => resolve(image);
-                image.onerror = reject;
-                image.src = src;
-            });
+            // ── helpers ──
+            const readDataUrl = file =>
+                new Promise((resolve, reject) => {
+                    const r = new FileReader();
+                    r.onload = () => resolve(r.result);
+                    r.onerror = reject;
+                    r.readAsDataURL(file);
+                });
+
+            const loadImage = src =>
+                new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = src;
+                });
 
             function getSettings() {
                 return {
@@ -787,337 +1240,401 @@
                     cornerSize: Number($('cornerSize').value),
                     position: $('position').value,
                     customX: Number($('customX').value),
-                    customY: Number($('customY').value)
+                    customY: Number($('customY').value),
+                    format: $('format').value,
                 };
             }
 
-            function drawWatermarked(image, full, corner, size) {
+            // ── watermark drawing ──
+            function drawWatermarked(image, fullImg, cornerImg, size) {
                 const settings = getSettings();
                 const output = document.createElement('canvas');
-                output.width = output.height = size;
+                output.width = size;
+                output.height = size;
+                const c = output.getContext('2d');
 
-                const context = output.getContext('2d');
-                context.fillStyle = '#fff';
-                context.fillRect(0, 0, size, size);
+                // white background
+                c.fillStyle = '#ffffff';
+                c.fillRect(0, 0, size, size);
 
-                const padding = size * settings.padding / 100;
-                const available = size - padding * 2;
-                const imageRatio = image.width / image.height;
+                const pad = size * settings.padding / 100;
+                const avail = size - pad * 2;
+                const ratio = image.width / image.height;
 
-                let width;
-                let height;
-
-                if (imageRatio >= 1) {
-                    width = available;
-                    height = available / imageRatio;
+                let w, h;
+                if (ratio >= 1) {
+                    w = avail;
+                    h = avail / ratio;
                 } else {
-                    height = available;
-                    width = available * imageRatio;
+                    h = avail;
+                    w = avail * ratio;
                 }
 
-                context.imageSmoothingEnabled = true;
-                context.imageSmoothingQuality = 'high';
-                context.drawImage(
-                    image,
-                    (size - width) / 2,
-                    (size - height) / 2,
-                    width,
-                    height
-                );
+                c.imageSmoothingEnabled = true;
+                c.imageSmoothingQuality = 'high';
+                c.drawImage(image, (size - w) / 2, (size - h) / 2, w, h);
 
-                if (full && settings.opacity > 0) {
-                    context.globalAlpha = settings.opacity / 100;
-                    context.drawImage(full, 0, 0, size, size);
-                    context.globalAlpha = 1;
+                // full-screen watermark
+                if (fullImg && settings.opacity > 0) {
+                    c.globalAlpha = settings.opacity / 100;
+                    c.drawImage(fullImg, 0, 0, size, size);
+                    c.globalAlpha = 1;
                 }
 
-                if (corner) {
-                    const watermarkSize = size * settings.cornerSize / 100;
-                    const watermarkRatio = corner.width / corner.height;
+                // corner watermark
+                if (cornerImg) {
+                    const wmSize = size * settings.cornerSize / 100;
+                    const wmRatio = cornerImg.width / cornerImg.height;
 
-                    const watermarkWidth = watermarkRatio >= 1
-                        ? watermarkSize
-                        : watermarkSize * watermarkRatio;
+                    let ww = wmRatio >= 1 ? wmSize : wmSize * wmRatio;
+                    let wh = wmRatio >= 1 ? wmSize / wmRatio : wmSize;
 
-                    const watermarkHeight = watermarkRatio >= 1
-                        ? watermarkSize / watermarkRatio
-                        : watermarkSize;
-
-                    const margin = padding * .5 + 8;
-                    let x;
-                    let y;
+                    const margin = pad * 0.5 + 8;
+                    let x, y;
 
                     if (settings.position === 'custom') {
-                        const maxX = size - watermarkWidth - margin * 2;
-                        const maxY = size - watermarkHeight - margin * 2;
-
+                        const maxX = size - ww - margin * 2;
+                        const maxY = size - wh - margin * 2;
                         x = margin + maxX * settings.customX / 100;
                         y = margin + maxY * settings.customY / 100;
                     } else {
                         x = margin;
                         y = margin;
-
-                        if (settings.position.includes('right')) {
-                            x = size - watermarkWidth - margin;
-                        }
-
-                        if (settings.position.includes('bottom')) {
-                            y = size - watermarkHeight - margin;
-                        }
+                        if (settings.position.includes('right')) x = size - ww - margin;
+                        if (settings.position.includes('bottom')) y = size - wh - margin;
                     }
 
-                    context.drawImage(
-                        corner,
-                        x,
-                        y,
-                        watermarkWidth,
-                        watermarkHeight
-                    );
+                    // corner watermark also respects opacity (same as full)
+                    if (settings.opacity > 0) {
+                        c.globalAlpha = settings.opacity / 100;
+                    }
+                    c.drawImage(cornerImg, x, y, ww, wh);
+                    c.globalAlpha = 1;
                 }
 
                 return output;
             }
 
+            // ── render preview ──
             async function renderPreview() {
                 if (!state.images.length) {
+                    ctx.clearRect(0, 0, 500, 500);
                     ctx.fillStyle = '#f8fafc';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillRect(0, 0, 500, 500);
                     ctx.fillStyle = '#94a3b8';
                     ctx.textAlign = 'center';
-                    ctx.font = '16px Inter, sans-serif';
-                    ctx.fillText('Upload images', 250, 240);
-                    ctx.font = '13px Inter, sans-serif';
-                    ctx.fillText('Live preview will appear here', 250, 265);
+                    ctx.textBaseline = 'middle';
+                    ctx.font = '500 16px Inter, sans-serif';
+                    ctx.fillText('Upload images', 250, 220);
+                    ctx.font = '400 13px Inter, sans-serif';
+                    ctx.fillText('Live preview appears here', 250, 246);
                     return;
                 }
 
-                const item = state.images[state.selected];
-                const image = await loadImage(item.src);
-                const full = state.full ? await loadImage(state.full.src) : null;
-                const corner = state.corner ? await loadImage(state.corner.src) : null;
-                const result = drawWatermarked(image, full, corner, 500);
+                try {
+                    const idx = Math.min(state.selected, state.images.length - 1);
+                    const item = state.images[idx];
+                    const img = await loadImage(item.src);
+                    const full = state.full ? await loadImage(state.full.src) : null;
+                    const corner = state.corner ? await loadImage(state.corner.src) : null;
+                    const result = drawWatermarked(img, full, corner, 500);
 
-                ctx.clearRect(0, 0, 500, 500);
-                ctx.drawImage(result, 0, 0);
+                    ctx.clearRect(0, 0, 500, 500);
+                    ctx.drawImage(result, 0, 0);
+                } catch (_) {
+                    // silent fail – preview will show nothing
+                }
             }
 
+            // ── UI updates ──
             function renderFiles() {
-                $('fileList').innerHTML = state.images.map((item, index) => `
-                    <span class="file-tag">
+                const container = $('fileList');
+                if (!state.images.length) {
+                    container.innerHTML = '';
+                    return;
+                }
+                container.innerHTML = state.images.map((item, i) =>
+                    `<span class="file-tag">
                         <i class="fas fa-file-image"></i>
                         ${item.file.name}
-                        <span class="remove" data-index="${index}">×</span>
-                    </span>
-                `).join('');
+                        <span class="remove" data-index="${i}">×</span>
+                    </span>`
+                ).join('');
 
-                $('fileList').querySelectorAll('.remove').forEach(remove => {
-                    remove.onclick = () => {
-                        state.images.splice(Number(remove.dataset.index), 1);
-                        state.selected = Math.min(
-                            state.selected,
-                            Math.max(0, state.images.length - 1)
-                        );
+                container.querySelectorAll('.remove').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const idx = Number(el.dataset.index);
+                        state.images.splice(idx, 1);
+                        if (state.selected >= state.images.length) {
+                            state.selected = Math.max(0, state.images.length - 1);
+                        }
                         updateUI();
-                    };
+                    });
                 });
             }
 
             function renderThumbnails() {
-                $('thumbnails').innerHTML = state.images.length
-                    ? state.images.map((item, index) => `
-                        <div class="thumbnail ${index === state.selected ? 'active' : ''}"
-                             data-index="${index}">
-                            <img src="${item.src}" alt="${item.file.name}">
-                            <span>${index + 1}</span>
-                        </div>
-                    `).join('')
-                    : '<div class="empty">Upload images to see previews.</div>';
+                const container = $('thumbnails');
+                if (!state.images.length) {
+                    container.innerHTML = '<div class="empty">Upload images to see previews.</div>';
+                    return;
+                }
 
-                $('thumbnails').querySelectorAll('.thumbnail').forEach(item => {
-                    item.onclick = () => {
-                        state.selected = Number(item.dataset.index);
+                container.innerHTML = state.images.map((item, i) => {
+                    const active = i === state.selected ? 'active' : '';
+                    return `<div class="thumbnail ${active}" data-index="${i}">
+                        <img src="${item.src}" alt="${item.file.name}" loading="lazy" />
+                        <span class="badge-num">${i + 1}</span>
+                    </div>`;
+                }).join('');
+
+                container.querySelectorAll('.thumbnail').forEach(el => {
+                    el.addEventListener('click', () => {
+                        state.selected = Number(el.dataset.index);
                         renderThumbnails();
                         renderPreview();
-                    };
+                    });
                 });
             }
 
-            function updateButton() {
-                const button = $('processButton');
-                button.disabled = !state.images.length || state.busy;
-                button.innerHTML = state.images.length
-                    ? '<i class="fas fa-play"></i> Process & Download Images'
-                    : '<i class="fas fa-images"></i> Upload images first';
-            }
-
             function updateUI() {
-                $('imageCount').textContent = state.images.length;
-                $('uploadedCount').textContent = state.images.length;
-                $('previewCount').textContent = state.images.length;
+                const count = state.images.length;
+                $('imageCount').textContent = count;
+                $('uploadedCount').textContent = count;
+                $('previewCount').textContent = count;
+
+                const btn = $('processButton');
+                btn.disabled = count === 0 || state.busy;
+                btn.innerHTML = count ?
+                    '<i class="fas fa-play"></i> Process & Download Images' :
+                    '<i class="fas fa-images"></i> Upload images first';
+
+                $('clearAllBtn').disabled = count === 0;
 
                 renderFiles();
                 renderThumbnails();
-                updateButton();
                 renderPreview();
             }
 
-            async function handleImages(files) {
-                const valid = [...files].filter(file =>
-                    file.type.startsWith('image/')
-                );
-
-                const loaded = await Promise.all(valid.map(async file => ({
-                    file,
-                    src: await readDataUrl(file)
-                })));
-
-                state.images.push(...loaded);
+            // ── clear all ──
+            function clearAllImages() {
+                if (!state.images.length) return;
+                if (state.busy) return;
+                if (!confirm('Remove all uploaded images?')) return;
+                state.images = [];
+                state.selected = 0;
                 updateUI();
             }
 
+            // ── handle image upload ──
+            async function handleImages(files) {
+                if (!files || !files.length) return;
+                const valid = [...files].filter(f => f.type.startsWith('image/'));
+                if (!valid.length) {
+                    alert('No valid image files found.');
+                    return;
+                }
+
+                // avoid duplicates by name + size
+                const existing = new Set(state.images.map(i => `${i.file.name}|${i.file.size}`));
+                const newItems = [];
+                for (const file of valid) {
+                    const key = `${file.name}|${file.size}`;
+                    if (existing.has(key)) continue;
+                    const src = await readDataUrl(file);
+                    newItems.push({ file, src });
+                    existing.add(key);
+                }
+
+                if (!newItems.length) {
+                    alert('All selected files are already uploaded.');
+                    return;
+                }
+
+                state.images.push(...newItems);
+                state.selected = state.images.length - 1;
+                updateUI();
+            }
+
+            // ── handle watermark upload ──
             async function handleWatermark(file, type) {
-                if (!file || file.type !== 'image/png') {
-                    alert('Please select a PNG watermark.');
+                if (!file) {
+                    // clear
+                    state[type] = null;
+                    const status = $(`${type}Status`);
+                    status.textContent = 'No file selected';
+                    status.classList.add('empty');
+                    $(`${type}Preview`).innerHTML =
+                        `<i class="fas fa-${type === 'full' ? 'vector-square' : 'thumbtack'}"></i>`;
+                    $(`${type}Info`).textContent = 'Not set';
+                    renderPreview();
+                    return;
+                }
+
+                if (file.type !== 'image/png') {
+                    alert('Please select a PNG file for the watermark.');
                     return;
                 }
 
                 const src = await readDataUrl(file);
-                const image = await loadImage(src);
+                const img = await loadImage(src);
 
-                state[type] = {
-                    file,
-                    src,
-                    image
-                };
+                state[type] = { file, src, image: img };
 
-                $(`${type}Status`).textContent = file.name;
-                $(`${type}Status`).classList.remove('empty');
-                $(`${type}Preview`).innerHTML =
-                    `<img src="${src}" alt="${type} watermark">`;
-                $(`${type}Info`).textContent = `${image.width}×${image.height}`;
+                const status = $(`${type}Status`);
+                status.textContent = file.name;
+                status.classList.remove('empty');
+
+                const preview = $(`${type}Preview`);
+                preview.innerHTML = `<img src="${src}" alt="${type} watermark" />`;
+                $(`${type}Info`).textContent = `${img.width}×${img.height}`;
 
                 renderPreview();
             }
 
+            // ── process ──
             async function processImages() {
                 if (!state.images.length || state.busy) return;
 
-                if (!state.full && !state.corner &&
-                    !confirm('No watermarks added. Continue with padding only?')) {
-                    return;
+                if (!state.full && !state.corner) {
+                    if (!confirm('No watermarks added. Continue with padding only?')) return;
                 }
 
                 state.busy = true;
-                updateButton();
-                $('progress').classList.add('visible');
+                updateUI();
+
+                const progress = $('progress');
+                progress.classList.add('visible');
+                const fill = $('progressFill');
+                const percent = $('progressPercent');
+                const status = $('progressStatus');
+
+                fill.style.width = '0%';
+                percent.textContent = '0%';
+                status.textContent = 'Starting…';
 
                 const format = $('format').value;
-                const extension = {
+                const ext = {
                     'image/png': 'png',
                     'image/jpeg': 'jpg',
                     'image/webp': 'webp',
                     'image/bmp': 'bmp'
-                }[format];
+                } [format] || 'png';
 
-                for (let i = 0; i < state.images.length; i++) {
+                const total = state.images.length;
+
+                for (let i = 0; i < total; i++) {
                     const item = state.images[i];
+                    status.textContent = `Processing ${i + 1}/${total}`;
+                    const pct = Math.round((i / total) * 100);
+                    fill.style.width = `${pct}%`;
+                    percent.textContent = `${pct}%`;
 
-                    $('progressStatus').textContent =
-                        `Processing ${i + 1}/${state.images.length}`;
+                    const img = await loadImage(item.src);
+                    const full = state.full ? state.full.image : null;
+                    const corner = state.corner ? state.corner.image : null;
 
-                    $('progressFill').style.width =
-                        `${i / state.images.length * 100}%`;
-
-                    $('progressPercent').textContent =
-                        `${Math.round(i / state.images.length * 100)}%`;
-
-                    const image = await loadImage(item.src);
-
-                    const result = drawWatermarked(
-                        image,
-                        state.full?.image,
-                        state.corner?.image,
-                        OUTPUT_SIZE
-                    );
+                    const result = drawWatermarked(img, full, corner, OUTPUT_SIZE);
 
                     const blob = await new Promise(resolve =>
                         result.toBlob(
                             resolve,
                             format,
-                            format === 'image/png' || format === 'image/bmp'
-                                ? undefined
-                                : QUALITY
+                            (format === 'image/png' || format === 'image/bmp') ? undefined : QUALITY
                         )
                     );
 
-                    saveAs(
-                        blob,
-                        `${item.file.name.replace(/\.[^.]+$/, '')}_${String(i + 1).padStart(2, '0')}.${extension}`
-                    );
+                    const base = item.file.name.replace(/\.[^.]+$/, '');
+                    const filename = `${base}_${String(i + 1).padStart(2, '0')}.${ext}`;
+                    saveAs(blob, filename);
 
-                    await new Promise(resolve => setTimeout(resolve, 120));
+                    // small delay for UI breathing
+                    await new Promise(r => setTimeout(r, 80));
                 }
 
-                $('progressFill').style.width = '100%';
-                $('progressPercent').textContent = '100%';
-                $('progressStatus').textContent = 'All images downloaded.';
+                fill.style.width = '100%';
+                percent.textContent = '100%';
+                status.textContent = '✅ All images downloaded!';
 
                 state.busy = false;
-                updateButton();
+                updateUI();
+
+                // auto-hide progress after 5s
+                setTimeout(() => {
+                    progress.classList.remove('visible');
+                }, 5000);
             }
 
+            // ── event bindings ──
+
+            // sliders
             ['padding', 'opacity', 'cornerSize'].forEach(id => {
-                $(id).addEventListener('input', () => {
-                    $(`${id}Label`).textContent = `${$(id).value}%`;
+                const el = $(id);
+                el.addEventListener('input', () => {
+                    $(`${id}Label`).textContent = `${el.value}%`;
                     renderPreview();
                 });
             });
 
             ['customX', 'customY'].forEach(id => {
-                $(id).addEventListener('input', () => {
-                    $(`${id}Label`).textContent = `${$(id).value}%`;
+                const el = $(id);
+                el.addEventListener('input', () => {
+                    $(`${id}Label`).textContent = `${el.value}%`;
                     renderPreview();
                 });
             });
 
+            // position toggle
             $('position').addEventListener('change', () => {
-                $('customPosition').classList.toggle(
-                    'visible',
-                    $('position').value === 'custom'
-                );
+                const custom = $('customPosition');
+                custom.classList.toggle('visible', $('position').value === 'custom');
                 renderPreview();
             });
 
+            // process
             $('processButton').addEventListener('click', processImages);
 
-            $('imageInput').addEventListener('change', event =>
-                handleImages(event.target.files)
-            );
+            // clear all
+            $('clearAllBtn').addEventListener('click', clearAllImages);
 
-            $('fullInput').addEventListener('change', event =>
-                handleWatermark(event.target.files[0], 'full')
-            );
-
-            $('cornerInput').addEventListener('change', event =>
-                handleWatermark(event.target.files[0], 'corner')
-            );
-
-            $('imageDrop').addEventListener('dragover', event => {
-                event.preventDefault();
-                $('imageDrop').classList.add('dragover');
+            // image upload
+            $('imageInput').addEventListener('change', e => {
+                handleImages(e.target.files);
+                e.target.value = '';
             });
 
-            $('imageDrop').addEventListener('dragleave', () => {
-                $('imageDrop').classList.remove('dragover');
+            // watermark uploads
+            $('fullInput').addEventListener('change', e => {
+                handleWatermark(e.target.files[0], 'full');
+                e.target.value = '';
             });
 
-            $('imageDrop').addEventListener('drop', event => {
-                event.preventDefault();
-                $('imageDrop').classList.remove('dragover');
-                handleImages(event.dataTransfer.files);
+            $('cornerInput').addEventListener('change', e => {
+                handleWatermark(e.target.files[0], 'corner');
+                e.target.value = '';
             });
+
+            // drag & drop
+            const drop = $('imageDrop');
+            drop.addEventListener('dragover', e => {
+                e.preventDefault();
+                drop.classList.add('dragover');
+            });
+            drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+            drop.addEventListener('drop', e => {
+                e.preventDefault();
+                drop.classList.remove('dragover');
+                handleImages(e.dataTransfer.files);
+            });
+
+            // ── init ──
+            // set initial custom position visibility
+            if ($('position').value === 'custom') {
+                $('customPosition').classList.add('visible');
+            }
 
             updateUI();
+
         })();
     </script>
 </body>
