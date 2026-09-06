@@ -1,0 +1,2525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mass Product Image Background Studio</title>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js">
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        /* ═══════════════════════════════════════════
+                   RESET & BASE
+                   ═══════════════════════════════════════════ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #0c1824;
+            --primary-light: #1a2d44;
+            --accent: #6366f1;
+            --accent-dark: #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --bg: #f1f5f9;
+            --white: #fff;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.10);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+            --font: 'Inter', -apple-system, system-ui, sans-serif;
+            --transition: 0.2s ease;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            font-family: var(--font);
+            color: var(--gray-700);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding: 16px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
+
+        .app {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* ═══════════════════════════════════════════
+                   HEADER
+                   ═══════════════════════════════════════════ */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 16px 28px;
+            margin-bottom: 24px;
+            background: var(--primary);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.12), transparent 70%);
+            pointer-events: none;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            z-index: 1;
+        }
+
+        .brand-icon {
+            display: grid;
+            width: 52px;
+            height: 52px;
+            place-items: center;
+            background: linear-gradient(145deg, #818cf8, var(--accent-dark));
+            border-radius: 14px;
+            font-size: 24px;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+            transition: transform var(--transition), box-shadow var(--transition);
+            position: relative;
+        }
+
+        .brand-icon::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.15), transparent);
+            pointer-events: none;
+        }
+
+        .brand:hover .brand-icon {
+            transform: scale(1.06) rotate(-2deg);
+            box-shadow: 0 6px 28px rgba(99, 102, 241, 0.55);
+        }
+
+        .brand-text h1 {
+            font-size: 22px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .brand-text h1 span {
+            color: var(--accent);
+            background: linear-gradient(145deg, #818cf8, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-text .sub {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.55);
+            font-weight: 400;
+            letter-spacing: 0.2px;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 18px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #a5b4fc;
+            z-index: 1;
+        }
+
+        .header-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34d399;
+            display: inline-block;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.85);
+            }
+        }
+
+        /* ─── Header Badges ─── */
+        .header-badges {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            z-index: 1;
+        }
+
+        .header-badge {
+            padding: 5px 16px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .header-badge.home-link {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .header-badge.home-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .header-badge.home-link i {
+            color: var(--accent);
+        }
+
+        .header-badge.batch {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+        }
+
+        .header-badge.batch i {
+            color: #818cf8;
+        }
+
+        .header-badge.local {
+            background: rgba(52, 211, 153, 0.15);
+            color: #6ee7b7;
+            border: 1px solid rgba(52, 211, 153, 0.12);
+        }
+
+        .header-badge.local i {
+            color: #34d399;
+        }
+
+        .header-badge.full-corner {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fcd34d;
+            border: 1px solid rgba(251, 191, 36, 0.12);
+        }
+
+        .header-badge.full-corner i {
+            color: #fbbf24;
+        }
+
+        /* ═══════════════════════════════════════════
+                   STEPS
+                   ═══════════════════════════════════════════ */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .step-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .step-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .step-num {
+            display: grid;
+            width: 40px;
+            height: 40px;
+            place-items: center;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 50%;
+            font-weight: 800;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .step-card .content h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .step-card .content p {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 1px;
+        }
+
+        .info-banner {
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            border-radius: var(--radius-sm);
+            padding: 12px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        .info-banner i {
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .info-banner strong {
+            color: var(--gray-800);
+        }
+
+        /* ═══════════════════════════════════════════
+                   UPLOAD SECTIONS
+                   ═══════════════════════════════════════════ */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .upload-section {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 20px 22px 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .upload-section .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .upload-section .section-head h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-section .section-head h3 i {
+            color: var(--accent);
+        }
+
+        .upload-section .section-head .right-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-section .section-head .count-badge {
+            padding: 2px 14px;
+            background: #eef2ff;
+            color: var(--accent-dark);
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* ─── Clear All button (highlighted) ─── */
+        .clear-section-btn {
+            padding: 4px 14px;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: none;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 1px 4px rgba(220, 38, 38, 0.15);
+        }
+
+        .clear-section-btn:hover:not(:disabled) {
+            background: #fecaca;
+            transform: scale(1.04);
+            box-shadow: 0 2px 12px rgba(220, 38, 38, 0.25);
+        }
+
+        .clear-section-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .clear-section-btn i {
+            font-size: 11px;
+        }
+
+        .drop-zone {
+            position: relative;
+            padding: 28px 16px 24px;
+            text-align: center;
+            background: var(--gray-50);
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            background: #eef2ff;
+            border-color: var(--accent);
+            box-shadow: inset 0 0 0 3px var(--accent-glow);
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .drop-zone .icon {
+            font-size: 32px;
+            color: var(--gray-400);
+            display: block;
+            margin-bottom: 4px;
+            transition: var(--transition);
+        }
+
+        .drop-zone:hover .icon {
+            color: var(--accent);
+        }
+
+        .drop-zone strong {
+            color: var(--accent-dark);
+        }
+
+        .drop-zone .hint {
+            font-size: 12px;
+            color: var(--gray-400);
+            margin-top: 2px;
+        }
+
+        .thumb-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 2px 0;
+        }
+
+        .thumb-grid .thumb-item {
+            position: relative;
+            aspect-ratio: 1/1;
+            border-radius: var(--radius-xs);
+            overflow: hidden;
+            border: 2px solid var(--gray-200);
+            background: var(--gray-50);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .thumb-grid .thumb-item:hover {
+            border-color: var(--accent);
+        }
+
+        .thumb-grid .thumb-item.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .thumb-grid .thumb-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .thumb-grid .thumb-item .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 20px;
+            height: 20px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.65);
+            color: #fff;
+            font-size: 11px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: var(--transition);
+            opacity: 0;
+        }
+
+        .thumb-grid .thumb-item:hover .remove-btn {
+            opacity: 1;
+        }
+
+        .thumb-grid .thumb-item .remove-btn:hover {
+            background: #dc2626;
+        }
+
+        .thumb-grid .thumb-item .file-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2px 6px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            font-size: 9px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            backdrop-filter: blur(4px);
+        }
+
+        .empty-thumbs {
+            grid-column: 1 / -1;
+            padding: 20px 10px;
+            color: var(--gray-400);
+            text-align: center;
+            font-size: 13px;
+        }
+
+        /* ═══════════════════════════════════════════
+                   WORKSPACE
+                   ═══════════════════════════════════════════ */
+        .workspace {
+            display: none;
+            grid-template-columns: 300px 1fr 260px;
+            gap: 20px;
+            margin-top: 8px;
+        }
+
+        .workspace.visible {
+            display: grid;
+        }
+
+        .controls-panel {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 18px 20px 22px;
+            box-shadow: var(--shadow);
+            max-height: 780px;
+            overflow-y: auto;
+        }
+
+        .controls-panel::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .controls-panel .panel-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .controls-panel .panel-title i {
+            color: var(--accent);
+        }
+
+        .ctrl-group {
+            margin-top: 16px;
+        }
+
+        .ctrl-group:first-child {
+            margin-top: 0;
+        }
+
+        .ctrl-group .ctrl-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 3px;
+        }
+
+        .ctrl-group .ctrl-label .val {
+            padding: 1px 12px;
+            background: #eef2ff;
+            color: var(--accent-dark);
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .ctrl-group input[type="range"] {
+            width: 100%;
+            height: 5px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gray-200);
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .ctrl-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+            transition: var(--transition);
+        }
+
+        .ctrl-group input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .ctrl-group input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .ctrl-group select {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xs);
+            font: inherit;
+            font-size: 13px;
+            color: var(--gray-700);
+            outline: none;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .ctrl-group select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .pos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .pos-grid button {
+            padding: 5px 0;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xs);
+            background: var(--gray-50);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+
+        .pos-grid button:hover {
+            background: #eef2ff;
+            border-color: var(--accent);
+            color: var(--accent-dark);
+        }
+
+        .pos-grid button.active-pos {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .shadow-options {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .shadow-options button {
+            padding: 4px 14px;
+            border: 1px solid var(--gray-200);
+            border-radius: 999px;
+            background: var(--gray-50);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+
+        .shadow-options button:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+        }
+
+        .shadow-options button.active-shadow {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .preview-panel {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 16px 18px 18px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-panel .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .preview-panel .preview-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preview-panel .preview-header h3 i {
+            color: var(--accent);
+        }
+
+        .preview-panel .preview-header .size-label {
+            font-size: 13px;
+            color: var(--gray-500);
+            font-weight: 500;
+        }
+
+        .preview-wrap {
+            position: relative;
+            background: var(--gray-50);
+            border-radius: var(--radius-xs);
+            overflow: hidden;
+            aspect-ratio: 1/1;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--gray-200);
+            min-height: 300px;
+        }
+
+        .preview-wrap canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #fff;
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preview-controls button {
+            padding: 4px 12px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xs);
+            background: var(--gray-50);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .preview-controls button:hover {
+            background: #eef2ff;
+            border-color: var(--accent);
+            color: var(--accent-dark);
+        }
+
+        .output-panel {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 18px 20px 22px;
+            box-shadow: var(--shadow);
+        }
+
+        .output-panel .panel-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .output-panel .panel-title i {
+            color: var(--accent);
+        }
+
+        .output-panel .summary-box {
+            background: var(--gray-50);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            margin: 12px 0 16px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .output-panel .summary-box .row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            padding: 2px 0;
+        }
+
+        .output-panel .summary-box .row .label {
+            color: var(--gray-500);
+        }
+        .output-panel .summary-box .row .value {
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .output-panel .summary-box .total {
+            border-top: 1px solid var(--gray-200);
+            margin-top: 6px;
+            padding-top: 6px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font: inherit;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+            text-decoration: none;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(145deg, var(--accent), var(--accent-dark));
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--gray-200);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #dc2626;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--gray-300);
+            color: var(--gray-600);
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: var(--gray-50);
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 12px;
+            width: auto;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .btn-group .btn-sm {
+            flex: 0 1 auto;
+        }
+
+        .progress-wrap {
+            margin-top: 12px;
+            display: none;
+        }
+
+        .progress-wrap.visible {
+            display: block;
+        }
+
+        .progress-track {
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+            border-radius: 999px;
+            transition: width 0.25s ease;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        .progress-info .pct {
+            color: var(--accent-dark);
+            font-weight: 700;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 2px 0;
+        }
+
+        .results-grid .result-item {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xs);
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .results-grid .result-item img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            display: block;
+        }
+
+        .results-grid .result-item .rname {
+            font-size: 10px;
+            padding: 3px 6px;
+            color: var(--gray-500);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .results-grid .result-item .rbtn {
+            padding: 2px 0 6px;
+        }
+
+        .results-grid .result-item .rbtn button {
+            padding: 2px 12px;
+            border: none;
+            border-radius: 999px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+
+        .results-grid .result-item .rbtn button:hover {
+            background: var(--accent-dark);
+        }
+
+        .empty-state {
+            display: grid;
+            place-items: center;
+            padding: 60px 20px;
+            text-align: center;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            color: var(--gray-400);
+            box-shadow: var(--shadow);
+        }
+
+        .empty-state i {
+            font-size: 56px;
+            color: var(--gray-300);
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            color: var(--gray-700);
+            margin-bottom: 4px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            max-width: 450px;
+            color: var(--gray-500);
+        }
+
+        .empty-state .btn {
+            width: auto;
+            margin-top: 16px;
+        }
+
+        .privacy-note {
+            text-align: center;
+            font-size: 13px;
+            color: var(--gray-400);
+            padding: 16px 0 4px;
+            border-top: 1px solid var(--gray-200);
+            margin-top: 24px;
+        }
+
+        .privacy-note i {
+            color: var(--accent);
+            margin: 0 4px;
+        }
+
+        /* ═══════════════════════════════════════════
+                   RESPONSIVE
+                   ═══════════════════════════════════════════ */
+        @media (max-width: 1200px) {
+            .workspace {
+                grid-template-columns: 280px 1fr 220px;
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .controls-panel {
+                max-height: none;
+            }
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+            .steps {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .header {
+                padding: 12px 16px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .brand-text h1 {
+                font-size: 18px;
+            }
+            .brand-icon {
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
+            }
+            .header-status {
+                font-size: 12px;
+                padding: 4px 14px;
+                align-self: flex-start;
+            }
+            .header-badges {
+                justify-content: flex-start;
+            }
+            .header-badge {
+                font-size: 10px;
+                padding: 3px 12px;
+            }
+            .steps .step-card {
+                padding: 14px 16px;
+            }
+            .step-num {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+            }
+            .step-card .content h4 {
+                font-size: 13px;
+            }
+            .step-card .content p {
+                font-size: 12px;
+            }
+            .controls-panel {
+                padding: 14px 16px;
+            }
+            .preview-panel {
+                padding: 12px 14px;
+            }
+            .output-panel {
+                padding: 14px 16px;
+            }
+            .thumb-grid {
+                grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+                gap: 6px;
+            }
+            .pos-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .btn {
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+            .results-grid {
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            }
+            .info-banner {
+                font-size: 13px;
+                padding: 10px 14px;
+            }
+            .upload-section .section-head {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .upload-section .section-head .right-group {
+                justify-content: space-between;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .thumb-grid {
+                grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+            }
+            .results-grid {
+                grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+            }
+            .preview-wrap {
+                min-height: 200px;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .btn-group .btn {
+                min-width: 0;
+            }
+            .shadow-options button {
+                font-size: 11px;
+                padding: 3px 10px;
+            }
+            .pos-grid button {
+                font-size: 10px;
+                padding: 4px 0;
+            }
+            .header-badges .header-badge:not(.home-link):not(.batch) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- ═══ HEADER ═══ -->
+        <header class="header">
+            <a class="brand" href="#">
+                <span class="brand-icon"><i class="fas fa-layer-group"></i></span>
+                <div class="brand-text">
+                    <h1>Mass Product <span>Studio</span></h1>
+                    <div class="sub">Create professional product images in bulk — fast and easy.</div>
+                </div>
+            </a>
+
+            <div class="header-badges">
+                <a class="header-badge home-link" href="index.html" aria-label="Home">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <span class="header-badge batch">
+                    <i class="fas fa-bolt"></i> Batch
+                </span>
+                <span class="header-badge local">
+                    <i class="fas fa-lock"></i> Local
+                </span>
+                <span class="header-badge full-corner">
+                    <i class="fas fa-layer-group"></i> Full + Corner
+                </span>
+            </div>
+
+            <div class="header-status">
+                <span class="dot"></span>
+                Ready to create
+            </div>
+        </header>
+
+        <!-- ═══ STEPS ═══ -->
+        <div class="steps">
+            <div class="step-card">
+                <div class="step-num">1</div>
+                <div class="content">
+                    <h4>📦 Upload Products</h4>
+                    <p>Add one or more product images</p>
+                </div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">2</div>
+                <div class="content">
+                    <h4>🖼️ Upload Backgrounds</h4>
+                    <p>Add one or more background images</p>
+                </div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">3</div>
+                <div class="content">
+                    <h4>⚙️ Customize &amp; Generate</h4>
+                    <p>Adjust, preview, and create your images</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ INFO BANNER ═══ -->
+        <div class="info-banner">
+            <i class="fas fa-info-circle"></i>
+            <span>
+                <strong>How it works:</strong> Product images are combined with each selected background automatically.
+                If you upload <strong id="infoProducts">0</strong> products and <strong id="infoBg">0</strong> backgrounds,
+                the tool will create <strong id="infoTotal">0</strong> final images.
+            </span>
+        </div>
+
+        <!-- ═══ UPLOAD GRID ═══ -->
+        <div class="upload-grid" id="uploadGrid">
+            <!-- Products -->
+            <div class="upload-section">
+                <div class="section-head">
+                    <h3><i class="fas fa-box"></i> Upload Product Images</h3>
+                    <div class="right-group">
+                        <span class="count-badge" id="productCount">0</span>
+                        <button class="clear-section-btn" id="clearProductsBtn" disabled>
+                            <i class="fas fa-trash-alt"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+                <div class="drop-zone" id="productDrop">
+                    <span class="icon"><i class="fas fa-cloud-upload-alt"></i></span>
+                    <div>Drag &amp; drop images here or <strong>click to browse</strong></div>
+                    <div class="hint">JPG · PNG · WEBP · Multiple files</div>
+                    <input id="productInput" type="file" accept="image/*" multiple />
+                </div>
+                <div class="thumb-grid" id="productThumbs">
+                    <div class="empty-thumbs">No products uploaded yet</div>
+                </div>
+            </div>
+
+            <!-- Backgrounds -->
+            <div class="upload-section">
+                <div class="section-head">
+                    <h3><i class="fas fa-image"></i> Upload Background Images</h3>
+                    <div class="right-group">
+                        <span class="count-badge" id="bgCount">0</span>
+                        <button class="clear-section-btn" id="clearBgBtn" disabled>
+                            <i class="fas fa-trash-alt"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+                <div class="drop-zone" id="bgDrop">
+                    <span class="icon"><i class="fas fa-cloud-upload-alt"></i></span>
+                    <div>Drag &amp; drop images here or <strong>click to browse</strong></div>
+                    <div class="hint">JPG · PNG · WEBP · Multiple files</div>
+                    <input id="bgInput" type="file" accept="image/*" multiple />
+                </div>
+                <div class="thumb-grid" id="bgThumbs">
+                    <div class="empty-thumbs">No backgrounds uploaded yet</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ WORKSPACE ═══ -->
+        <div class="workspace" id="workspace">
+
+            <!-- Controls -->
+            <div class="controls-panel">
+                <div class="panel-title"><i class="fas fa-sliders-h"></i> Product Settings</div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">Current Product</div>
+                    <div style="display:flex;gap:6px;align-items:center;margin-top:2px;">
+                        <button class="btn btn-secondary btn-sm" id="prevProduct" style="flex:0;">←</button>
+                        <span style="flex:1;text-align:center;font-weight:600;font-size:14px;" id="productSelector">1 / 1</span>
+                        <button class="btn btn-secondary btn-sm" id="nextProduct" style="flex:0;">→</button>
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">Current Background</div>
+                    <div style="display:flex;gap:6px;align-items:center;margin-top:2px;">
+                        <button class="btn btn-secondary btn-sm" id="prevBg" style="flex:0;">←</button>
+                        <span style="flex:1;text-align:center;font-weight:600;font-size:14px;" id="bgSelector">1 / 1</span>
+                        <button class="btn btn-secondary btn-sm" id="nextBg" style="flex:0;">→</button>
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">
+                        Scale
+                        <span class="val" id="scaleVal">120 %</span>
+                    </div>
+                    <input id="scale" type="range" min="10" max="200" value="120" />
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">
+                        Rotation
+                        <span class="val" id="rotationVal">0°</span>
+                    </div>
+                    <input id="rotation" type="range" min="-180" max="180" value="0" />
+                    <button class="btn btn-secondary btn-sm" id="resetRotation" style="margin-top:4px;width:auto;padding:3px 14px;font-size:11px;">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">Position</div>
+                    <div class="pos-grid" id="posGrid">
+                        <button data-pos="tl">↖</button>
+                        <button data-pos="tc">↑</button>
+                        <button data-pos="tr">↗</button>
+                        <button data-pos="ml">←</button>
+                        <button data-pos="mc" class="active-pos">⊙</button>
+                        <button data-pos="mr">→</button>
+                        <button data-pos="bl">↙</button>
+                        <button data-pos="bc">↓</button>
+                        <button data-pos="br">↘</button>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:4px;">
+                        <div style="flex:1;">
+                            <div class="ctrl-label" style="font-size:11px;">X</div>
+                            <input id="posX" type="range" min="-100" max="100" value="0" />
+                        </div>
+                        <div style="flex:1;">
+                            <div class="ctrl-label" style="font-size:11px;">Y</div>
+                            <input id="posY" type="range" min="-100" max="100" value="0" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">Shadow</div>
+                    <div class="shadow-options" id="shadowOptions">
+                        <button data-shadow="none" class="active-shadow">None</button>
+                        <button data-shadow="soft">Soft</button>
+                        <button data-shadow="medium">Medium</button>
+                        <button data-shadow="strong">Strong</button>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:4px;">
+                        <div style="flex:1;">
+                            <div class="ctrl-label" style="font-size:11px;">Opacity</div>
+                            <input id="shadowOpacity" type="range" min="0" max="100" value="35" />
+                        </div>
+                        <div style="flex:1;">
+                            <div class="ctrl-label" style="font-size:11px;">Blur</div>
+                            <input id="shadowBlur" type="range" min="0" max="40" value="12" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">Background Fit</div>
+                    <select id="bgFit">
+                        <option value="cover">Cover</option>
+                        <option value="contain" selected>Contain</option>
+                        <option value="stretch">Stretch</option>
+                        <option value="center">Center</option>
+                    </select>
+                </div>
+
+                <div style="display:flex;gap:8px;margin-top:14px;">
+                    <button class="btn btn-secondary btn-sm" id="resetSettings" style="flex:1;">
+                        <i class="fas fa-undo-alt"></i> Reset Settings
+                    </button>
+                    <button class="btn btn-danger btn-sm" id="clearAllBtn" style="flex:1;">
+                        <i class="fas fa-trash-alt"></i> Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="preview-panel">
+                <div class="preview-header">
+                    <h3><i class="fas fa-eye"></i> Live Preview</h3>
+                    <span class="size-label" id="previewSizeLabel">1500 × 1500 px</span>
+                </div>
+                <div class="preview-wrap" id="previewWrap">
+                    <canvas id="previewCanvas" width="500" height="500"></canvas>
+                </div>
+                <div class="preview-controls">
+                    <button id="zoomIn"><i class="fas fa-search-plus"></i> Zoom In</button>
+                    <button id="zoomOut"><i class="fas fa-search-minus"></i> Zoom Out</button>
+                    <button id="zoomFit"><i class="fas fa-arrows-alt"></i> Fit</button>
+                    <button id="zoomReset"><i class="fas fa-home"></i> Reset</button>
+                </div>
+            </div>
+
+            <!-- Output -->
+            <div class="output-panel">
+                <div class="panel-title"><i class="fas fa-download"></i> Generate &amp; Export</div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">Output Size</div>
+                    <select id="outputSize">
+                        <option value="500">500 × 500</option>
+                        <option value="800">800 × 800</option>
+                        <option value="1000">1000 × 1000</option>
+                        <option value="1500">1500 × 1500</option>
+                        <option value="2000" selected>2000 × 2000</option>
+                        <option value="3000">3000 × 3000</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <div id="customSize" style="display:none;margin-top:6px;">
+                        <div style="display:flex;gap:8px;">
+                            <input id="customW" type="number" placeholder="Width" value="1500" style="flex:1;padding:6px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-xs);font:inherit;font-size:13px;" />
+                            <span style="display:grid;place-items:center;">×</span>
+                            <input id="customH" type="number" placeholder="Height" value="1500" style="flex:1;padding:6px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-xs);font:inherit;font-size:13px;" />
+                        </div>
+                        <label style="font-size:12px;display:flex;align-items:center;gap:4px;margin-top:4px;color:var(--gray-500);">
+                            <input type="checkbox" id="lockAspect" checked /> Lock aspect ratio
+                        </label>
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">Format</div>
+                    <select id="exportFormat">
+                        <option value="image/jpeg">JPEG</option>
+                        <option value="image/png">PNG</option>
+                        <option value="image/webp">WebP</option>
+                    </select>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">Quality</div>
+                    <select id="exportQuality">
+                        <option value="0.7">70%</option>
+                        <option value="0.85">85%</option>
+                        <option value="0.92">92%</option>
+                        <option value="1.0" selected>100%</option>
+                    </select>
+                </div>
+
+                <div class="summary-box">
+                    <div class="row"><span class="label">Products</span><span class="value" id="sumProducts">0</span></div>
+                    <div class="row"><span class="label">Backgrounds</span><span class="value" id="sumBg">0</span></div>
+                    <div class="row total"><span class="label">Total Images</span><span class="value" id="sumTotal">0</span></div>
+                </div>
+
+                <button class="btn btn-primary" id="generateBtn" disabled>
+                    <i class="fas fa-rocket"></i> Generate All Images
+                </button>
+
+                <div class="progress-wrap" id="progressWrap">
+                    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+                    <div class="progress-info">
+                        <span class="pct" id="progressPct">0%</span>
+                        <span id="progressStatus">Ready</span>
+                    </div>
+                </div>
+
+                <div id="resultsArea" style="display:none;margin-top:14px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <span style="font-weight:700;font-size:14px;color:var(--gray-800);">
+                            <i class="fas fa-check-circle" style="color:#10b981;"></i> Generation Complete!
+                        </span>
+                        <div style="display:flex;gap:6px;">
+                            <button class="btn btn-secondary btn-sm" id="downloadZipBtn">
+                                <i class="fas fa-file-archive"></i> ZIP
+                            </button>
+                            <button class="btn btn-secondary btn-sm" id="downloadAllBtn">
+                                <i class="fas fa-download"></i> All
+                            </button>
+                        </div>
+                    </div>
+                    <div class="results-grid" id="resultsGrid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+            <i class="fas fa-images"></i>
+            <h3>Create Professional Product Images</h3>
+            <p>Upload your product and background images to get started. We'll combine them in bulk with your custom settings.</p>
+            <button class="btn btn-primary" id="emptyUploadBtn" style="width:auto;">
+                <i class="fas fa-cloud-upload-alt"></i> Upload Product Images
+            </button>
+        </div>
+
+        <!-- Privacy -->
+        <div class="privacy-note">
+            <i class="fas fa-shield-alt"></i> Your images stay on your device.
+            All processing is done locally in your browser.
+            <i class="fas fa-lock" style="margin-left:8px;"></i>
+        </div>
+
+    </div>
+
+    <script>
+        (() => {
+            'use strict';
+
+            // ── DOM refs ──
+            const $ = id => document.getElementById(id);
+
+            const productInput = $('productInput');
+            const productDrop = $('productDrop');
+            const productThumbs = $('productThumbs');
+            const productCount = $('productCount');
+
+            const bgInput = $('bgInput');
+            const bgDrop = $('bgDrop');
+            const bgThumbs = $('bgThumbs');
+            const bgCount = $('bgCount');
+
+            const workspace = $('workspace');
+            const emptyState = $('emptyState');
+            const emptyUploadBtn = $('emptyUploadBtn');
+
+            const previewCanvas = $('previewCanvas');
+            const ctx = previewCanvas.getContext('2d');
+            const previewSizeLabel = $('previewSizeLabel');
+
+            const productSelector = $('productSelector');
+            const bgSelector = $('bgSelector');
+            const prevProduct = $('prevProduct');
+            const nextProduct = $('nextProduct');
+            const prevBg = $('prevBg');
+            const nextBg = $('nextBg');
+
+            const scale = $('scale');
+            const scaleVal = $('scaleVal');
+            const rotation = $('rotation');
+            const rotationVal = $('rotationVal');
+            const resetRotation = $('resetRotation');
+            const posX = $('posX');
+            const posY = $('posY');
+            const posGrid = $('posGrid');
+            const shadowOptions = $('shadowOptions');
+            const shadowOpacity = $('shadowOpacity');
+            const shadowBlur = $('shadowBlur');
+            const bgFit = $('bgFit');
+            const outputSize = $('outputSize');
+            const customSize = $('customSize');
+            const customW = $('customW');
+            const customH = $('customH');
+            const lockAspect = $('lockAspect');
+            const exportFormat = $('exportFormat');
+            const exportQuality = $('exportQuality');
+            const generateBtn = $('generateBtn');
+            const progressWrap = $('progressWrap');
+            const progressFill = $('progressFill');
+            const progressPct = $('progressPct');
+            const progressStatus = $('progressStatus');
+            const resultsArea = $('resultsArea');
+            const resultsGrid = $('resultsGrid');
+            const downloadZipBtn = $('downloadZipBtn');
+            const downloadAllBtn = $('downloadAllBtn');
+            const resetSettings = $('resetSettings');
+            const clearAllBtn = $('clearAllBtn');
+
+            // New Clear Section buttons
+            const clearProductsBtn = $('clearProductsBtn');
+            const clearBgBtn = $('clearBgBtn');
+
+            const sumProducts = $('sumProducts');
+            const sumBg = $('sumBg');
+            const sumTotal = $('sumTotal');
+            const infoProducts = $('infoProducts');
+            const infoBg = $('infoBg');
+            const infoTotal = $('infoTotal');
+
+            const zoomIn = $('zoomIn');
+            const zoomOut = $('zoomOut');
+            const zoomFit = $('zoomFit');
+            const zoomReset = $('zoomReset');
+
+            // ── State ──
+            const state = {
+                products: [],
+                backgrounds: [],
+                productIndex: 0,
+                bgIndex: 0,
+                settings: {
+                    scale: 85,
+                    rotation: 0,
+                    posX: 0,
+                    posY: 0,
+                    shadow: 'none',
+                    shadowOpacity: 35,
+                    shadowBlur: 12,
+                    bgFit: 'contain',
+                    outputSize: 1500,
+                    format: 'image/jpeg',
+                    quality: 0.85,
+                },
+                generated: [],
+                isGenerating: false,
+                zoom: 1,
+                zoomPanX: 0,
+                zoomPanY: 0,
+                nextId: 0,
+                autoDownloadTriggered: false,
+            };
+
+            // ── Helpers ──
+            function readDataUrl(file) {
+                return new Promise((resolve, reject) => {
+                    const r = new FileReader();
+                    r.onload = () => resolve(r.result);
+                    r.onerror = reject;
+                    r.readAsDataURL(file);
+                });
+            }
+
+            function loadImage(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            }
+
+            function getEffectiveSize() {
+                const val = outputSize.value;
+                if (val === 'custom') {
+                    const w = parseInt(customW.value) || 1500;
+                    const h = parseInt(customH.value) || 1500;
+                    return { width: w, height: h };
+                }
+                const s = parseInt(val) || 1500;
+                return { width: s, height: s };
+            }
+
+            function getSettings() {
+                const size = getEffectiveSize();
+                return {
+                    scale: Number(scale.value),
+                    rotation: Number(rotation.value),
+                    posX: Number(posX.value),
+                    posY: Number(posY.value),
+                    shadow: state.settings.shadow,
+                    shadowOpacity: Number(shadowOpacity.value),
+                    shadowBlur: Number(shadowBlur.value),
+                    bgFit: bgFit.value,
+                    outputWidth: size.width,
+                    outputHeight: size.height,
+                    format: exportFormat.value,
+                    quality: Number(exportQuality.value),
+                };
+            }
+
+            // ── Core: render composite (FIXED: cover mode now centers) ──
+            function renderComposite(productImg, bgImg, settings) {
+                const w = settings.outputWidth || 1500;
+                const h = settings.outputHeight || 1500;
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const c = canvas.getContext('2d');
+
+                // Draw background
+                if (bgImg) {
+                    const iw = bgImg.width;
+                    const ih = bgImg.height;
+                    const aspect = iw / ih;
+                    const canvasAspect = w / h;
+                    let dw, dh, dx, dy;
+
+                    switch (settings.bgFit) {
+                        case 'cover':
+                            // Cover: fill canvas while preserving aspect, cropping centered
+                            if (aspect >= canvasAspect) {
+                                // Image is wider than canvas (relative)
+                                dh = h;
+                                dw = h * aspect;
+                            } else {
+                                // Image is taller than canvas
+                                dw = w;
+                                dh = w / aspect;
+                            }
+                            dx = (w - dw) / 2;
+                            dy = (h - dh) / 2;
+                            break;
+                        case 'contain':
+                            if (aspect >= canvasAspect) {
+                                dw = w;
+                                dh = w / aspect;
+                            } else {
+                                dh = h;
+                                dw = h * aspect;
+                            }
+                            dx = (w - dw) / 2;
+                            dy = (h - dh) / 2;
+                            break;
+                        case 'stretch':
+                            dw = w;
+                            dh = h;
+                            dx = 0;
+                            dy = 0;
+                            break;
+                        case 'center':
+                        default:
+                            const scale2 = Math.min(1, Math.min(w / iw, h / ih));
+                            dw = iw * scale2;
+                            dh = ih * scale2;
+                            dx = (w - dw) / 2;
+                            dy = (h - dh) / 2;
+                            break;
+                    }
+                    c.drawImage(bgImg, dx, dy, dw, dh);
+                } else {
+                    c.fillStyle = '#f0f0f0';
+                    c.fillRect(0, 0, w, h);
+                }
+
+                // Draw product
+                if (productImg) {
+                    const baseSize = Math.min(w, h) * 0.75;
+                    const scaleFactor = settings.scale / 100;
+                    const size = baseSize * scaleFactor;
+
+                    const ratio = productImg.width / productImg.height;
+                    let pw, ph;
+                    if (ratio >= 1) {
+                        pw = size;
+                        ph = size / ratio;
+                    } else {
+                        ph = size;
+                        pw = size * ratio;
+                    }
+
+                    const cx = w / 2 + (settings.posX / 100) * (w / 2);
+                    const cy = h / 2 + (settings.posY / 100) * (h / 2);
+
+                    c.save();
+                    c.translate(cx, cy);
+                    c.rotate((settings.rotation * Math.PI) / 180);
+
+                    if (settings.shadow !== 'none') {
+                        const blurMap = { soft: 12, medium: 24, strong: 40 };
+                        const blur = blurMap[settings.shadow] || 12;
+                        const opacity = settings.shadowOpacity / 100;
+                        const offset = blur * 0.2;
+
+                        c.shadowColor = `rgba(0,0,0,${opacity * 0.6})`;
+                        c.shadowBlur = blur * 1.2;
+                        c.shadowOffsetX = offset;
+                        c.shadowOffsetY = offset * 1.2;
+                        c.drawImage(productImg, -pw / 2, -ph / 2, pw, ph);
+                        c.shadowColor = 'transparent';
+                        c.shadowBlur = 0;
+                        c.shadowOffsetX = 0;
+                        c.shadowOffsetY = 0;
+                        c.drawImage(productImg, -pw / 2, -ph / 2, pw, ph);
+                    } else {
+                        c.drawImage(productImg, -pw / 2, -ph / 2, pw, ph);
+                    }
+
+                    c.restore();
+                }
+
+                return canvas;
+            }
+
+            // ── Update preview ──
+            async function updatePreview() {
+                const prod = state.products[state.productIndex];
+                const bg = state.backgrounds[state.bgIndex];
+
+                if (!prod) {
+                    ctx.clearRect(0, 0, 500, 500);
+                    ctx.fillStyle = '#f1f5f9';
+                    ctx.fillRect(0, 0, 500, 500);
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = '14px Inter, sans-serif';
+                    ctx.fillText('Upload a product', 250, 250);
+                    return;
+                }
+
+                const settings = getSettings();
+                const prodImg = prod.img;
+                const bgImg = bg ? bg.img : null;
+
+                const result = renderComposite(prodImg, bgImg, settings);
+
+                const pv = previewCanvas;
+                const pvSize = Math.min(pv.width, pv.height);
+                const aspect = result.width / result.height;
+                let dw, dh;
+                if (aspect >= 1) {
+                    dw = pvSize;
+                    dh = pvSize / aspect;
+                } else {
+                    dh = pvSize;
+                    dw = pvSize * aspect;
+                }
+                const dx = (pv.width - dw) / 2;
+                const dy = (pv.height - dh) / 2;
+
+                ctx.clearRect(0, 0, pv.width, pv.height);
+                ctx.drawImage(result, dx, dy, dw, dh);
+
+                const size = getEffectiveSize();
+                previewSizeLabel.textContent = `${size.width} × ${size.height} px`;
+
+                productSelector.textContent = `${state.productIndex + 1} / ${state.products.length}`;
+                bgSelector.textContent = `${state.bgIndex + 1} / ${state.backgrounds.length}`;
+
+                updateSummary();
+            }
+
+            // ── Summary ──
+            function updateSummary() {
+                const pCount = state.products.length;
+                const bCount = state.backgrounds.length;
+                const total = pCount * bCount;
+                sumProducts.textContent = pCount;
+                sumBg.textContent = bCount;
+                sumTotal.textContent = total;
+                infoProducts.textContent = pCount;
+                infoBg.textContent = bCount;
+                infoTotal.textContent = total;
+
+                generateBtn.disabled = pCount === 0 || bCount === 0 || state.isGenerating;
+                if (pCount === 0 || bCount === 0) {
+                    generateBtn.innerHTML = '<i class="fas fa-images"></i> Upload products & backgrounds first';
+                } else {
+                    generateBtn.innerHTML = `<i class="fas fa-rocket"></i> Generate ${total} Images`;
+                }
+
+                // Update clear section buttons
+                clearProductsBtn.disabled = pCount === 0;
+                clearBgBtn.disabled = bCount === 0;
+            }
+
+            // ── Render thumbnails ──
+            function renderThumbs() {
+                // Products
+                if (state.products.length === 0) {
+                    productThumbs.innerHTML = '<div class="empty-thumbs">No products uploaded yet</div>';
+                    productCount.textContent = '0';
+                } else {
+                    productThumbs.innerHTML = state.products.map((p, i) => `
+                        <div class="thumb-item ${i === state.productIndex ? 'active' : ''}" data-idx="${i}">
+                            <img src="${p.src}" alt="${p.file.name}" loading="lazy" />
+                            <button class="remove-btn" data-idx="${i}" data-type="product" title="Remove">×</button>
+                            <div class="file-label">${p.file.name}</div>
+                        </div>
+                    `).join('');
+                    productCount.textContent = state.products.length;
+                }
+
+                // Backgrounds
+                if (state.backgrounds.length === 0) {
+                    bgThumbs.innerHTML = '<div class="empty-thumbs">No backgrounds uploaded yet</div>';
+                    bgCount.textContent = '0';
+                } else {
+                    bgThumbs.innerHTML = state.backgrounds.map((b, i) => `
+                        <div class="thumb-item ${i === state.bgIndex ? 'active' : ''}" data-idx="${i}">
+                            <img src="${b.src}" alt="${b.file.name}" loading="lazy" />
+                            <button class="remove-btn" data-idx="${i}" data-type="bg" title="Remove">×</button>
+                            <div class="file-label">${b.file.name}</div>
+                        </div>
+                    `).join('');
+                    bgCount.textContent = state.backgrounds.length;
+                }
+
+                // Click to select
+                document.querySelectorAll('#productThumbs .thumb-item').forEach(el => {
+                    el.addEventListener('click', (e) => {
+                        if (e.target.closest('.remove-btn')) return;
+                        const idx = Number(el.dataset.idx);
+                        if (!isNaN(idx) && idx >= 0 && idx < state.products.length) {
+                            state.productIndex = idx;
+                            renderThumbs();
+                            updatePreview();
+                        }
+                    });
+                });
+
+                document.querySelectorAll('#bgThumbs .thumb-item').forEach(el => {
+                    el.addEventListener('click', (e) => {
+                        if (e.target.closest('.remove-btn')) return;
+                        const idx = Number(el.dataset.idx);
+                        if (!isNaN(idx) && idx >= 0 && idx < state.backgrounds.length) {
+                            state.bgIndex = idx;
+                            renderThumbs();
+                            updatePreview();
+                        }
+                    });
+                });
+
+                // Remove buttons
+                document.querySelectorAll('.remove-btn[data-type="product"]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const idx = Number(btn.dataset.idx);
+                        state.products.splice(idx, 1);
+                        if (state.productIndex >= state.products.length) {
+                            state.productIndex = Math.max(0, state.products.length - 1);
+                        }
+                        renderThumbs();
+                        updatePreview();
+                        updateSummary();
+                        checkEmptyState();
+                    });
+                });
+
+                document.querySelectorAll('.remove-btn[data-type="bg"]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const idx = Number(btn.dataset.idx);
+                        state.backgrounds.splice(idx, 1);
+                        if (state.bgIndex >= state.backgrounds.length) {
+                            state.bgIndex = Math.max(0, state.backgrounds.length - 1);
+                        }
+                        renderThumbs();
+                        updatePreview();
+                        updateSummary();
+                        checkEmptyState();
+                    });
+                });
+
+                updateSummary();
+            }
+
+            // ── Check empty state ──
+            function checkEmptyState() {
+                if (state.products.length === 0 && state.backgrounds.length === 0) {
+                    workspace.classList.remove('visible');
+                    emptyState.style.display = 'grid';
+                } else {
+                    workspace.classList.add('visible');
+                    emptyState.style.display = 'none';
+                }
+            }
+
+            // ── Upload handler ──
+            async function handleUpload(files, type) {
+                const valid = [...files].filter(f => f.type.startsWith('image/'));
+                if (!valid.length) {
+                    alert('Please upload valid image files (JPG, PNG, WEBP).');
+                    return;
+                }
+
+                for (const file of valid) {
+                    const src = await readDataUrl(file);
+                    const img = await loadImage(src);
+                    const entry = { id: state.nextId++, file, src, img };
+                    if (type === 'product') {
+                        state.products.push(entry);
+                    } else {
+                        state.backgrounds.push(entry);
+                    }
+                }
+
+                if (type === 'product' && state.products.length > 0) {
+                    state.productIndex = state.products.length - 1;
+                }
+                if (type === 'bg' && state.backgrounds.length > 0) {
+                    state.bgIndex = state.backgrounds.length - 1;
+                }
+
+                renderThumbs();
+                updatePreview();
+                updateSummary();
+                checkEmptyState();
+
+                if (type === 'product') productInput.value = '';
+                else bgInput.value = '';
+            }
+
+            // ── Clear section: products ──
+            function clearProducts() {
+                if (state.products.length === 0) return;
+                if (!confirm('Remove all product images?')) return;
+                state.products = [];
+                state.productIndex = 0;
+                renderThumbs();
+                updatePreview();
+                updateSummary();
+                checkEmptyState();
+            }
+
+            // ── Clear section: backgrounds ──
+            function clearBackgrounds() {
+                if (state.backgrounds.length === 0) return;
+                if (!confirm('Remove all background images?')) return;
+                state.backgrounds = [];
+                state.bgIndex = 0;
+                renderThumbs();
+                updatePreview();
+                updateSummary();
+                checkEmptyState();
+            }
+
+            // ── Download ZIP function (reusable) ──
+            async function downloadZip() {
+                if (state.generated.length === 0) return;
+                try {
+                    const zip = new JSZip();
+                    for (const g of state.generated) {
+                        const blob = await fetch(g.dataUrl).then(r => r.blob());
+                        zip.file(g.name, blob);
+                    }
+                    const zipBlob = await zip.generateAsync({ type: 'blob' });
+                    saveAs(zipBlob, 'product_images.zip');
+                } catch (err) {
+                    alert('Error creating ZIP: ' + err.message);
+                }
+            }
+
+            // ── Download all individual ──
+            function downloadAll() {
+                if (state.generated.length === 0) return;
+                for (const g of state.generated) {
+                    const link = document.createElement('a');
+                    link.download = g.name;
+                    link.href = g.dataUrl;
+                    link.click();
+                }
+            }
+
+            // ── Generate all ──
+            async function generateAll() {
+                if (state.products.length === 0 || state.backgrounds.length === 0 || state.isGenerating) return;
+
+                state.isGenerating = true;
+                state.autoDownloadTriggered = false;
+                generateBtn.disabled = true;
+                progressWrap.classList.add('visible');
+                progressFill.style.width = '0%';
+                progressPct.textContent = '0%';
+                progressStatus.textContent = 'Starting...';
+                resultsArea.style.display = 'none';
+                state.generated = [];
+
+                const settings = getSettings();
+                const total = state.products.length * state.backgrounds.length;
+                let completed = 0;
+
+                // Recursive function to process one image at a time
+                async function processNext() {
+                    if (completed >= total) {
+                        // All done
+                        progressFill.style.width = '100%';
+                        progressPct.textContent = '100%';
+                        progressStatus.textContent = '✅ Generation Complete!';
+
+                        // Show results
+                        resultsArea.style.display = 'block';
+                        resultsGrid.innerHTML = state.generated.map((g, i) => `
+                            <div class="result-item">
+                                <img src="${g.dataUrl}" alt="${g.name}" loading="lazy" />
+                                <div class="rname">${g.name}</div>
+                                <div class="rbtn">
+                                    <button data-idx="${i}"><i class="fas fa-download"></i></button>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        resultsGrid.querySelectorAll('.rbtn button').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                const idx = Number(btn.dataset.idx);
+                                const item = state.generated[idx];
+                                if (item) {
+                                    const link = document.createElement('a');
+                                    link.download = item.name;
+                                    link.href = item.dataUrl;
+                                    link.click();
+                                }
+                            });
+                        });
+
+                        downloadZipBtn.disabled = false;
+                        downloadAllBtn.disabled = false;
+
+                        state.isGenerating = false;
+                        generateBtn.disabled = false;
+                        updateSummary();
+
+                        // Auto-download ZIP after a short delay
+                        if (!state.autoDownloadTriggered && state.generated.length > 0) {
+                            state.autoDownloadTriggered = true;
+                            progressStatus.textContent = '📦 Starting download...';
+                            await new Promise(r => setTimeout(r, 500));
+                            await downloadZip();
+                            progressStatus.textContent = '✅ Complete! All images downloaded.';
+                        }
+
+                        setTimeout(() => {
+                            progressWrap.classList.remove('visible');
+                        }, 4000);
+                        return;
+                    }
+
+                    // Calculate indices
+                    const pi = Math.floor(completed / state.backgrounds.length);
+                    const bi = completed % state.backgrounds.length;
+                    const prod = state.products[pi];
+                    const bg = state.backgrounds[bi];
+
+                    progressStatus.textContent = `Generating ${completed + 1}/${total}`;
+                    const pct = Math.round((completed / total) * 100);
+                    progressFill.style.width = `${pct}%`;
+                    progressPct.textContent = `${pct}%`;
+
+                    try {
+                        const result = renderComposite(prod.img, bg.img, settings);
+                        const dataUrl = result.toDataURL(settings.format, settings.quality);
+
+                        const ext = settings.format === 'image/png' ? 'png' :
+                            settings.format === 'image/webp' ? 'webp' : 'jpg';
+                        const name =
+                            `product-${String(pi + 1).padStart(2, '0')}-bg-${String(bi + 1).padStart(2, '0')}.${ext}`;
+
+                        state.generated.push({ productId: prod.id, bgId: bg.id, dataUrl, name });
+                    } catch (err) {
+                        console.error('Error processing image:', err);
+                        // Continue with next
+                    }
+                    completed++;
+
+                    // Yield control to browser to prevent "long running script"
+                    await new Promise(r => setTimeout(r, 0));
+                    // Process next image
+                    await processNext();
+                }
+
+                try {
+                    await processNext();
+                } catch (err) {
+                    console.error('Generation error:', err);
+                    alert('An error occurred during generation: ' + err.message);
+                    progressStatus.textContent = '❌ Error';
+                    state.isGenerating = false;
+                    generateBtn.disabled = false;
+                    updateSummary();
+                }
+            }
+
+            // ── Reset settings ──
+            function resetAllSettings() {
+                scale.value = '85';
+                scaleVal.textContent = '85%';
+                rotation.value = '0';
+                rotationVal.textContent = '0°';
+                posX.value = '0';
+                posY.value = '0';
+                shadowOptions.querySelectorAll('button').forEach(b => b.classList.remove('active-shadow'));
+                document.querySelector('[data-shadow="none"]').classList.add('active-shadow');
+                state.settings.shadow = 'none';
+                shadowOpacity.value = '35';
+                shadowBlur.value = '12';
+                bgFit.value = 'contain';
+                outputSize.value = '1500';
+                customSize.style.display = 'none';
+                exportFormat.value = 'image/jpeg';
+                exportQuality.value = '0.85';
+                updatePreview();
+            }
+
+            // ── Clear all ──
+            function clearAll() {
+                if (state.products.length === 0 && state.backgrounds.length === 0) return;
+                if (!confirm('Remove all uploaded images and reset settings?')) return;
+                state.products = [];
+                state.backgrounds = [];
+                state.productIndex = 0;
+                state.bgIndex = 0;
+                state.generated = [];
+                state.autoDownloadTriggered = false;
+                resultsArea.style.display = 'none';
+                renderThumbs();
+                updatePreview();
+                updateSummary();
+                checkEmptyState();
+                resetAllSettings();
+            }
+
+            // ── Position presets ──
+            function applyPositionPreset(pos) {
+                const map = {
+                    'tl': [-70, -70],
+                    'tc': [0, -70],
+                    'tr': [70, -70],
+                    'ml': [-70, 0],
+                    'mc': [0, 0],
+                    'mr': [70, 0],
+                    'bl': [-70, 70],
+                    'bc': [0, 70],
+                    'br': [70, 70],
+                };
+                const p = map[pos];
+                if (p) {
+                    posX.value = p[0];
+                    posY.value = p[1];
+                    posGrid.querySelectorAll('button').forEach(b => b.classList.remove('active-pos'));
+                    const btn = posGrid.querySelector(`[data-pos="${pos}"]`);
+                    if (btn) btn.classList.add('active-pos');
+                    updatePreview();
+                }
+            }
+
+            // ── Zoom controls ──
+            function applyZoom() {
+                const pv = previewCanvas;
+                pv.style.transform = `scale(${state.zoom})`;
+                pv.style.transformOrigin = 'center center';
+            }
+
+            // ── Init ──
+            function init() {
+                // Product upload
+                productInput.addEventListener('change', e => handleUpload(e.target.files, 'product'));
+                productDrop.addEventListener('dragover', e => { e.preventDefault();
+                    productDrop.classList.add('dragover'); });
+                productDrop.addEventListener('dragleave', () => productDrop.classList.remove('dragover'));
+                productDrop.addEventListener('drop', e => {
+                    e.preventDefault();
+                    productDrop.classList.remove('dragover');
+                    handleUpload(e.dataTransfer.files, 'product');
+                });
+
+                // BG upload
+                bgInput.addEventListener('change', e => handleUpload(e.target.files, 'bg'));
+                bgDrop.addEventListener('dragover', e => { e.preventDefault();
+                    bgDrop.classList.add('dragover'); });
+                bgDrop.addEventListener('dragleave', () => bgDrop.classList.remove('dragover'));
+                bgDrop.addEventListener('drop', e => {
+                    e.preventDefault();
+                    bgDrop.classList.remove('dragover');
+                    handleUpload(e.dataTransfer.files, 'bg');
+                });
+
+                emptyUploadBtn.addEventListener('click', () => productInput.click());
+
+                // Clear section buttons
+                clearProductsBtn.addEventListener('click', clearProducts);
+                clearBgBtn.addEventListener('click', clearBackgrounds);
+
+                // Navigation
+                prevProduct.addEventListener('click', () => {
+                    if (state.products.length > 1) {
+                        state.productIndex = (state.productIndex - 1 + state.products.length) % state.products.length;
+                        renderThumbs();
+                        updatePreview();
+                    }
+                });
+                nextProduct.addEventListener('click', () => {
+                    if (state.products.length > 1) {
+                        state.productIndex = (state.productIndex + 1) % state.products.length;
+                        renderThumbs();
+                        updatePreview();
+                    }
+                });
+                prevBg.addEventListener('click', () => {
+                    if (state.backgrounds.length > 1) {
+                        state.bgIndex = (state.bgIndex - 1 + state.backgrounds.length) % state.backgrounds.length;
+                        renderThumbs();
+                        updatePreview();
+                    }
+                });
+                nextBg.addEventListener('click', () => {
+                    if (state.backgrounds.length > 1) {
+                        state.bgIndex = (state.bgIndex + 1) % state.backgrounds.length;
+                        renderThumbs();
+                        updatePreview();
+                    }
+                });
+
+                // Sliders
+                scale.addEventListener('input', () => {
+                    scaleVal.textContent = `${scale.value}%`;
+                    updatePreview();
+                });
+                rotation.addEventListener('input', () => {
+                    rotationVal.textContent = `${rotation.value}°`;
+                    updatePreview();
+                });
+                resetRotation.addEventListener('click', () => {
+                    rotation.value = '0';
+                    rotationVal.textContent = '0°';
+                    updatePreview();
+                });
+                posX.addEventListener('input', updatePreview);
+                posY.addEventListener('input', updatePreview);
+
+                // Position presets
+                posGrid.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        applyPositionPreset(btn.dataset.pos);
+                    });
+                });
+
+                // Shadow
+                shadowOptions.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        shadowOptions.querySelectorAll('button').forEach(b => b.classList.remove(
+                        'active-shadow'));
+                        btn.classList.add('active-shadow');
+                        state.settings.shadow = btn.dataset.shadow;
+                        updatePreview();
+                    });
+                });
+                shadowOpacity.addEventListener('input', updatePreview);
+                shadowBlur.addEventListener('input', updatePreview);
+
+                // BG fit
+                bgFit.addEventListener('change', updatePreview);
+
+                // Output size
+                outputSize.addEventListener('change', () => {
+                    customSize.style.display = outputSize.value === 'custom' ? 'block' : 'none';
+                    updatePreview();
+                });
+                customW.addEventListener('input', updatePreview);
+                customH.addEventListener('input', updatePreview);
+
+                let aspectLock = 1;
+                customW.addEventListener('input', () => {
+                    if (lockAspect.checked && customW.value) {
+                        const w = parseInt(customW.value) || 1;
+                        customH.value = Math.round(w / aspectLock);
+                    }
+                });
+                customH.addEventListener('input', () => {
+                    if (lockAspect.checked && customH.value) {
+                        const h = parseInt(customH.value) || 1;
+                        customW.value = Math.round(h * aspectLock);
+                    }
+                });
+                setTimeout(() => {
+                    const w = parseInt(customW.value) || 1500;
+                    const h = parseInt(customH.value) || 1500;
+                    aspectLock = w / h;
+                }, 100);
+
+                exportFormat.addEventListener('change', updatePreview);
+                exportQuality.addEventListener('change', updatePreview);
+
+                // Generate & download
+                generateBtn.addEventListener('click', generateAll);
+                downloadZipBtn.addEventListener('click', downloadZip);
+                downloadAllBtn.addEventListener('click', downloadAll);
+
+                // Reset & clear
+                resetSettings.addEventListener('click', resetAllSettings);
+                clearAllBtn.addEventListener('click', clearAll);
+
+                // Zoom
+                zoomIn.addEventListener('click', () => {
+                    state.zoom = Math.min(state.zoom * 1.3, 4);
+                    applyZoom();
+                });
+                zoomOut.addEventListener('click', () => {
+                    state.zoom = Math.max(state.zoom / 1.3, 0.25);
+                    applyZoom();
+                });
+                zoomFit.addEventListener('click', () => {
+                    state.zoom = 1;
+                    applyZoom();
+                });
+                zoomReset.addEventListener('click', () => {
+                    state.zoom = 1;
+                    applyZoom();
+                });
+
+                // Initial render
+                renderThumbs();
+                updatePreview();
+                updateSummary();
+                checkEmptyState();
+
+                infoProducts.textContent = '0';
+                infoBg.textContent = '0';
+                infoTotal.textContent = '0';
+
+                console.log('✅ Mass Product Image Background Studio ready');
+            }
+
+            document.addEventListener('DOMContentLoaded', init);
+
+        })();
+    </script>
+
+</body>
+</html>
