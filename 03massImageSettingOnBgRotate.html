@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mass Image Setting Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+ margin:0;
+ font-family:'Poppins',sans-serif;
+ background:linear-gradient(135deg,#667eea,#764ba2);
+ min-height:100vh;
+ padding:30px;
+ color:#fff;
+}
+h2{text-align:center;margin-bottom:30px;}
+.container{
+ display:grid;
+ grid-template-columns:1fr 1.2fr 1fr;
+ gap:25px;
+ max-width:1400px;
+ margin:auto;
+}
+.box{
+ background:rgba(255,255,255,0.12);
+ backdrop-filter:blur(12px);
+ border-radius:20px;
+ padding:25px;
+ box-shadow:0 15px 40px rgba(0,0,0,0.3);
+}
+label{font-weight:500;display:block;margin-bottom:8px;}
+input,canvas,button{width:100%;}
+input[type=file],input[type=number]{
+ background:#fff;color:#333;padding:6px;border-radius:6px;margin-bottom:10px;
+}
+input[type=range]{margin-bottom:15px;}
+canvas{
+ border-radius:15px;
+ border:2px solid rgba(255,255,255,.4);
+ background:#000;
+}
+button{
+ padding:14px;border:none;border-radius:30px;
+ font-size:16px;font-weight:500;cursor:pointer;margin-bottom:15px;
+}
+.btn-main{background:linear-gradient(90deg,#00f2fe,#4facfe);}
+.btn-clear{background:linear-gradient(90deg,#ff416c,#ff4b2b);color:#fff;}
+.info{text-align:center;color:#ffd700;font-size:14px;}
+.footer{text-align:center;margin-top:25px;opacity:.8;}
+</style>
+</head>
+
+<body>
+
+<h2>✨ Mass Product Image Background Studio ✨</h2>
+
+<div class="container">
+
+<!-- LEFT -->
+<div class="box">
+<label>Upload Product Images</label>
+<input type="file" id="products" multiple accept="image/*">
+
+<label>Upload Background Images</label>
+<input type="file" id="backgrounds" multiple accept="image/*">
+
+<label>Product Scale (%)</label>
+<input type="range" id="scaleRange" min="10" max="100" value="100">
+<input type="number" id="scaleInput" min="10" max="100" value="100">
+
+<label>Rotate (Degree)</label>
+<input type="range" id="rotateRange" min="-180" max="180" value="0">
+<input type="number" id="rotateInput" min="-180" max="180" value="0">
+
+<div class="info" id="sizeInfo">Final Size: -</div>
+</div>
+
+<!-- CENTER -->
+<div class="box">
+<label>Live Preview</label><br>
+<canvas id="canvas"></canvas>
+</div>
+
+<!-- RIGHT -->
+<div class="box">
+<label>Actions</label><br>
+<button class="btn-main" onclick="generate()">🚀 Generate & Download</button>
+<button class="btn-clear" onclick="clearAll()">🗑 Clear All</button>
+</div>
+
+</div>
+
+<div class="footer">
+© 2026 | Designed By Mahesh Keshniya
+</div>
+
+<script>
+const products = document.getElementById("products");
+const backgrounds = document.getElementById("backgrounds");
+
+const scaleRange = document.getElementById("scaleRange");
+const scaleInput = document.getElementById("scaleInput");
+const rotateRange = document.getElementById("rotateRange");
+const rotateInput = document.getElementById("rotateInput");
+const sizeInfo = document.getElementById("sizeInfo");
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let currentProduct=null,currentBackground=null;
+
+/* 🔥 AUTO PREVIEW ON IMAGE SELECT */
+products.onchange = backgrounds.onchange = preview;
+
+/* Sync controls */
+scaleRange.oninput=()=>{scaleInput.value=scaleRange.value;draw();}
+scaleInput.oninput=()=>{scaleRange.value=scaleInput.value;draw();}
+rotateRange.oninput=()=>{rotateInput.value=rotateRange.value;draw();}
+rotateInput.oninput=()=>{rotateRange.value=rotateInput.value;draw();}
+
+function load(file){
+ return new Promise(res=>{
+  const img=new Image();
+  img.onload=()=>res(img);
+  img.src=URL.createObjectURL(file);
+ });
+}
+
+async function preview(){
+ if(!products.files[0]||!backgrounds.files[0])return;
+ currentProduct=await load(products.files[0]);
+ currentBackground=await load(backgrounds.files[0]);
+ draw();
+}
+
+function draw(){
+ if(!currentProduct||!currentBackground)return;
+
+ canvas.width=currentProduct.width;
+ canvas.height=currentProduct.height;
+
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.drawImage(currentBackground,0,0,canvas.width,canvas.height);
+
+ const scale=scaleRange.value/100;
+ const w=currentProduct.width*scale;
+ const h=currentProduct.height*scale;
+
+ sizeInfo.innerText=`Final Size: ${Math.round(w)} x ${Math.round(h)} px`;
+
+ ctx.save();
+ ctx.translate(canvas.width/2,canvas.height/2);
+ ctx.rotate(rotateRange.value*Math.PI/180);
+ ctx.drawImage(currentProduct,-w/2,-h/2,w,h);
+ ctx.restore();
+}
+
+async function generate(){
+ let n=1;
+ for(let p of products.files){
+  const prod=await load(p);
+  for(let b of backgrounds.files){
+   currentProduct=prod;
+   currentBackground=await load(b);
+   draw(); download(n++);
+  }
+ }
+ alert("Done! "+(n-1)+" images created");
+}
+
+function download(n){
+ let a=document.createElement("a");
+ a.download="image_"+n+".jpg";
+ a.href=canvas.toDataURL("image/jpeg",0.95);
+ a.click();
+}
+
+function clearAll(){
+ products.value=backgrounds.value="";
+ scaleRange.value=scaleInput.value=100;
+ rotateRange.value=rotateInput.value=0;
+ sizeInfo.innerText="Final Size: -";
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+</script>
+
+</body>
+</html>
