@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Image Tools — Resize, Watermark, Mirror & Logo Remover</title>
+    <title>Image Tools — Resize, Watermark, Mirror, Logo Remover & Background Studio</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -496,10 +496,10 @@
             position: relative;
             z-index: 1;
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 16px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
             width: 100%;
-            max-width: 420px;
+            max-width: 480px;
         }
         .hero-tool-card {
             background: var(--card-bg);
@@ -507,39 +507,32 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--card-border);
             border-radius: var(--radius-sm);
-            padding: 20px 12px;
+            padding: 18px 10px;
             text-align: center;
             box-shadow: var(--shadow);
             transition: var(--transition);
             animation: fadeUp 0.8s ease both;
-            animation-delay: calc(0.12s * var(--i, 1));
+            animation-delay: calc(0.1s * var(--i, 1));
         }
-        .hero-tool-card:nth-child(1) {
-            --i: 1;
-        }
-        .hero-tool-card:nth-child(2) {
-            --i: 2;
-            margin-top: 16px;
-        }
-        .hero-tool-card:nth-child(3) {
-            --i: 3;
-            margin-top: 32px;
-        }
+        .hero-tool-card:nth-child(1) { --i: 1; }
+        .hero-tool-card:nth-child(2) { --i: 2; }
+        .hero-tool-card:nth-child(3) { --i: 3; }
+        .hero-tool-card:nth-child(4) { --i: 4; }
         .hero-tool-card:hover {
             transform: translateY(-8px) scale(1.03);
             border-color: var(--primary-light);
             box-shadow: var(--shadow-hover);
         }
         .hero-tool-card .icon-wrap {
-            width: 48px;
-            height: 48px;
-            margin: 0 auto 10px;
-            border-radius: 16px;
+            width: 44px;
+            height: 44px;
+            margin: 0 auto 8px;
+            border-radius: 14px;
             background: linear-gradient(135deg, rgba(108, 92, 231, 0.10), rgba(253, 121, 168, 0.06));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             color: var(--primary);
             transition: var(--transition);
         }
@@ -550,11 +543,11 @@
             box-shadow: 0 8px 24px var(--primary-glow);
         }
         .hero-tool-card h4 {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
         }
         .hero-tool-card p {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--text-muted);
             margin: 0;
             opacity: 0.8;
@@ -617,7 +610,7 @@
         }
         .tools-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 24px;
             margin-top: 16px;
         }
@@ -649,13 +642,8 @@
             animation: shimmer 3s ease-in-out infinite;
         }
         @keyframes shimmer {
-            0%,
-            100% {
-                background-position: -200% 0;
-            }
-            50% {
-                background-position: 200% 0;
-            }
+            0%, 100% { background-position: -200% 0; }
+            50% { background-position: 200% 0; }
         }
         .tool-card:hover::before {
             opacity: 1;
@@ -694,15 +682,8 @@
             opacity: 1;
         }
         @keyframes ringPulse {
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 0.4;
-            }
-            50% {
-                transform: scale(1.15);
-                opacity: 0;
-            }
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.15); opacity: 0; }
         }
 
         .tool-card .icon-box .icon-inner {
@@ -737,6 +718,10 @@
             background: linear-gradient(145deg, #fdcb6e, #f39c12, #d68910);
             box-shadow: 0 12px 32px rgba(243, 156, 18, 0.35);
         }
+        .tool-card .icon-box.icon-background {
+            background: linear-gradient(145deg, #00b4d8, #0096c7, #0077b6);
+            box-shadow: 0 12px 32px rgba(0, 180, 216, 0.35);
+        }
 
         .tool-card .icon-box::before {
             content: '';
@@ -758,26 +743,14 @@
         .tool-card .icon-box {
             animation: iconFloat 5s ease-in-out infinite;
         }
-        .tool-card .icon-box.icon-resize {
-            animation-delay: 0s;
-        }
-        .tool-card .icon-box.icon-watermark {
-            animation-delay: 1.2s;
-        }
-        .tool-card .icon-box.icon-mirror {
-            animation-delay: 2.4s;
-        }
-        .tool-card .icon-box.icon-eraser {
-            animation-delay: 3.6s;
-        }
+        .tool-card .icon-box.icon-resize { animation-delay: 0s; }
+        .tool-card .icon-box.icon-watermark { animation-delay: 1.2s; }
+        .tool-card .icon-box.icon-mirror { animation-delay: 2.4s; }
+        .tool-card .icon-box.icon-eraser { animation-delay: 3.6s; }
+        .tool-card .icon-box.icon-background { animation-delay: 4.8s; }
         @keyframes iconFloat {
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-6px);
-            }
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
         }
         .tool-card:hover .icon-box {
             animation-play-state: paused;
@@ -965,7 +938,7 @@
         }
         footer .footer-grid {
             display: grid;
-            grid-template-columns: 1.6fr 1fr 1fr;
+            grid-template-columns: 1.6fr 1fr 1fr 1fr;
             gap: 36px;
             padding-bottom: 32px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -1059,18 +1032,11 @@
             opacity: 1;
             transform: translateY(0);
         }
-        .reveal-delay-1 {
-            transition-delay: 0.08s;
-        }
-        .reveal-delay-2 {
-            transition-delay: 0.16s;
-        }
-        .reveal-delay-3 {
-            transition-delay: 0.24s;
-        }
-        .reveal-delay-4 {
-            transition-delay: 0.32s;
-        }
+        .reveal-delay-1 { transition-delay: 0.08s; }
+        .reveal-delay-2 { transition-delay: 0.16s; }
+        .reveal-delay-3 { transition-delay: 0.24s; }
+        .reveal-delay-4 { transition-delay: 0.32s; }
+        .reveal-delay-5 { transition-delay: 0.40s; }
 
         /* ---------- Responsive ---------- */
         @media (max-width: 1024px) {
@@ -1081,13 +1047,16 @@
                 gap: 30px;
             }
             .hero-tools-preview {
-                max-width: 340px;
+                max-width: 380px;
             }
             .tools-grid {
-                gap: 18px;
+                grid-template-columns: repeat(2, 1fr);
             }
             .steps-grid {
                 gap: 16px;
+            }
+            footer .footer-grid {
+                grid-template-columns: 1fr 1fr 1fr;
             }
         }
 
@@ -1166,25 +1135,21 @@
                 font-size: 1rem;
             }
             .hero-tools-preview {
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 10px;
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+                gap: 8px;
                 max-width: 100%;
             }
             .hero-tool-card {
-                padding: 14px 8px;
-            }
-            .hero-tool-card:nth-child(2),
-            .hero-tool-card:nth-child(3) {
-                margin-top: 0;
+                padding: 12px 4px;
             }
             .hero-tool-card .icon-wrap {
-                width: 38px;
-                height: 38px;
-                font-size: 1rem;
-                border-radius: 12px;
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+                border-radius: 8px;
             }
             .hero-tool-card h4 {
-                font-size: 0.7rem;
+                font-size: 0.55rem;
             }
             .hero-tool-card p {
                 display: none;
@@ -1311,20 +1276,21 @@
                 padding: 0 14px;
             }
             .hero-tools-preview {
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 6px;
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+                gap: 4px;
             }
             .hero-tool-card {
-                padding: 10px 4px;
+                padding: 8px 2px;
             }
             .hero-tool-card .icon-wrap {
-                width: 30px;
-                height: 30px;
-                font-size: 0.75rem;
-                border-radius: 8px;
+                width: 26px;
+                height: 26px;
+                font-size: 0.65rem;
+                border-radius: 6px;
+                margin-bottom: 2px;
             }
             .hero-tool-card h4 {
-                font-size: 0.55rem;
+                font-size: 0.45rem;
             }
             .section-title {
                 font-size: 1.4rem;
@@ -1406,8 +1372,8 @@
                     Product Images
                 </h1>
                 <p>
-                    Resize, watermark, mirror, and remove logos from your product images
-                    quickly for Amazon, Flipkart, Myntra, Snapdeal, and other marketplaces.
+                    Resize, watermark, mirror, remove logos, and replace backgrounds in bulk —
+                    all in one place. Perfect for Amazon, Flipkart, Myntra, Snapdeal, and more.
                 </p>
                 <div class="hero-actions">
                     <a href="#tools" class="btn-primary">
@@ -1437,6 +1403,11 @@
                         <h4>Mirror</h4>
                         <p>Flip instantly</p>
                     </div>
+                    <div class="hero-tool-card">
+                        <div class="icon-wrap"><i class="fas fa-layer-group"></i></div>
+                        <h4>Background</h4>
+                        <p>Bulk replace</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1448,7 +1419,7 @@
             <span class="badge"><i class="fas fa-cubes"></i> Our Tools</span>
             <h2 class="section-title reveal">Everything you need,<br /><span class="highlight">right here.</span></h2>
             <p class="section-sub reveal">
-                Four powerful image editing tools built specifically for
+                Five powerful image editing tools built specifically for
                 e-commerce sellers. No clutter, no complexity.
             </p>
             <div class="tools-grid">
@@ -1495,6 +1466,17 @@
                     <p>Easily remove logos, watermarks, and unwanted text with AI-powered inpainting.</p>
                     <a href="Logo remover .html" class="btn-tool">Use Tool <i class="fas fa-arrow-right"></i></a>
                 </div>
+
+                <!-- Tool 5: Background Studio (NEW) -->
+                <div class="tool-card reveal reveal-delay-5">
+                    <div class="icon-box icon-background">
+                        <span class="ring-pulse"></span>
+                        <span class="icon-inner"><i class="fas fa-layer-group"></i></span>
+                    </div>
+                    <h3>Mass Background Studio</h3>
+                    <p>Replace product backgrounds in bulk — upload multiple products and backgrounds, generate all combinations.</p>
+                    <a href="Mass Product Sutdo.html" class="btn-tool">Use Tool <i class="fas fa-arrow-right"></i></a>
+                </div>
             </div>
         </div>
     </section>
@@ -1511,12 +1493,12 @@
                 <div class="step-card reveal reveal-delay-1">
                     <div class="step-number">1</div>
                     <h4>Choose a Tool</h4>
-                    <p>Select Resize, Watermark, Mirror, or Logo Remover.</p>
+                    <p>Select Resize, Watermark, Mirror, Logo Remover, or Background Studio.</p>
                 </div>
                 <div class="step-card reveal reveal-delay-2">
                     <div class="step-number">2</div>
                     <h4>Upload Your Image</h4>
-                    <p>Upload the product image you want to edit.</p>
+                    <p>Upload the product image(s) you want to edit.</p>
                 </div>
                 <div class="step-card reveal reveal-delay-3">
                     <div class="step-number">3</div>
@@ -1526,7 +1508,7 @@
                 <div class="step-card reveal reveal-delay-4">
                     <div class="step-number">4</div>
                     <h4>Download</h4>
-                    <p>Download your final image and use it for your listing.</p>
+                    <p>Download your final image(s) and use them for your listings.</p>
                 </div>
             </div>
         </div>
@@ -1567,6 +1549,7 @@
                         <li><a href="Image_Watermark.html">Watermark</a></li>
                         <li><a href="Mirror Tool.html">Mirror Image</a></li>
                         <li><a href="Logo remover .html">Logo Remover</a></li>
+                        <li><a href="Mass Product Image Background Studio.html">Background Studio</a></li>
                     </ul>
                 </div>
                 <div>
@@ -1576,6 +1559,13 @@
                         <li><a href="#marketplaces">Flipkart</a></li>
                         <li><a href="#marketplaces">Myntra</a></li>
                         <li><a href="#marketplaces">Snapdeal</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Contact</a></li>
                     </ul>
                 </div>
             </div>
@@ -1724,6 +1714,7 @@
 
         console.log('🚀 E-Commerce Tools — All bugs fixed & design upgraded!');
         console.log('✨ Features: Dark mode, scroll progress, particles, back to top, and more.');
+        console.log('🆕 Added: Mass Product Image Background Studio tool.');
     </script>
 
 </body>
