@@ -3,48 +3,52 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Image Watermark · ImageTools</title>
+    <title>Image Watermark Studio</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js">
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
-        /* ── reset & base ── */
-        *,
-        *::before,
-        *::after {
+        * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
         :root {
-            --primary: #0f1a2b;
-            --primary-light: #1a2a3a;
-            --accent: #00b894;
-            --accent-dark: #00997a;
-            --accent-glow: rgba(0, 184, 148, .25);
-            --bg: #f0f4f9;
-            --white: #fff;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f4f9;
-            --gray-200: #e2e7ef;
-            --gray-300: #c8cfdb;
-            --gray-400: #9aa3b3;
-            --gray-500: #6b7588;
-            --gray-600: #455063;
-            --gray-700: #293241;
-            --gray-800: #1a2330;
-            --shadow: 0 8px 32px rgba(0, 0, 0, .06);
-            --shadow-lg: 0 16px 48px rgba(0, 0, 0, .10);
-            --radius: 18px;
-            --radius-sm: 10px;
-            --font: 'Inter', -apple-system, system-ui, sans-serif;
-            --transition: .22s ease;
+            --primary: #111827;
+            --primary-2: #1f2937;
+            --accent: #10b981;
+            --accent-dark: #059669;
+            --accent-soft: #ecfdf5;
+
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --border: #e5e7eb;
+
+            --text: #111827;
+            --text-2: #374151;
+            --muted: #6b7280;
+            --muted-2: #9ca3af;
+
+            --danger: #ef4444;
+            --danger-soft: #fef2f2;
+
+            --radius-xl: 22px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+
+            --shadow: 0 8px 30px rgba(15, 23, 42, .06);
+            --shadow-hover: 0 15px 40px rgba(15, 23, 42, .10);
+
+            --transition: .2s ease;
         }
 
         html {
@@ -53,341 +57,379 @@
 
         body {
             min-height: 100vh;
-            padding: 28px 24px 48px;
-            background: var(--bg);
-            color: var(--gray-700);
-            font-family: var(--font);
-            line-height: 1.5;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(16,185,129,.07), transparent 30%),
+                radial-gradient(circle at 90% 10%, rgba(59,130,246,.05), transparent 25%),
+                var(--bg);
+            color: var(--text);
+            font-family: Inter, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        button,
+        label,
+        select {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* =========================
+           APP
+        ========================= */
+
         .app {
-            width: min(1240px, 100%);
-            margin: 0 auto;
+            width: min(1380px, calc(100% - 40px));
+            margin: auto;
+            padding: 24px 0 50px;
         }
 
-        /* ── scrollbar ── */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--gray-100);
-            border-radius: 8px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--gray-300);
-            border-radius: 8px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--gray-400);
-        }
+        /* =========================
+           HEADER
+        ========================= */
 
-        /* ── header ── */
         .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            flex-wrap: wrap;
-            padding: 16px 28px 16px 24px;
-            margin-bottom: 32px;
-            background: var(--primary);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
             position: relative;
-            overflow: hidden;
-        }
-
-        .header::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 20% 30%, rgba(0, 184, 148, .08) 0%, transparent 70%);
-            pointer-events: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 18px 22px;
+            margin-bottom: 24px;
+            background: rgba(255,255,255,.92);
+            border: 1px solid rgba(229,231,235,.9);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(15px);
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 13px;
             text-decoration: none;
-            z-index: 1;
-            flex-shrink: 0;
+            color: inherit;
         }
 
-        .brand-logo {
+        .brand-icon {
+            width: 48px;
+            height: 48px;
             display: grid;
-            width: 52px;
-            height: 52px;
             place-items: center;
-            background: linear-gradient(145deg, var(--accent), var(--accent-dark));
+            color: white;
+            font-size: 20px;
             border-radius: 14px;
-            font-size: 24px;
-            color: #fff;
-            box-shadow: 0 4px 16px rgba(0, 184, 148, .35);
-            transition: transform var(--transition), box-shadow var(--transition);
-            flex-shrink: 0;
-        }
-
-        .brand:hover .brand-logo {
-            transform: scale(1.04) rotate(-2deg);
-            box-shadow: 0 6px 24px rgba(0, 184, 148, .45);
-        }
-
-        .brand-text {
-            display: flex;
-            align-items: baseline;
-            flex-wrap: wrap;
-            gap: 6px 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 8px 20px rgba(16,185,129,.25);
         }
 
         .brand-text h1 {
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--white);
-            letter-spacing: -0.5px;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -.5px;
         }
 
         .brand-text h1 span {
+            color: var(--accent-dark);
+        }
+
+        .brand-text p {
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .header-chip {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--text-2);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .header-chip i {
             color: var(--accent);
+        }
+
+        .header-chip.green {
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+            border-color: #d1fae5;
+        }
+
+        /* =========================
+           PAGE INTRO
+        ========================= */
+
+        .intro {
+            margin: 10px 4px 24px;
+        }
+
+        .intro h2 {
+            font-size: 27px;
+            letter-spacing: -.8px;
             font-weight: 800;
         }
 
-        .brand-badge {
-            padding: 4px 14px;
-            background: rgba(255, 255, 255, .10);
-            border: 1px solid rgba(255, 255, 255, .08);
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            color: rgba(255, 255, 255, .75);
-            letter-spacing: .3px;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        .brand-badge i {
-            margin-right: 5px;
-            color: var(--accent);
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-            z-index: 1;
-        }
-
-        .header-actions .home-link {
-            color: rgba(255, 255, 255, .7);
-            text-decoration: none;
+        .intro p {
+            margin-top: 5px;
+            color: var(--muted);
             font-size: 13px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 8px;
-            transition: var(--transition);
         }
 
-        .header-actions .home-link:hover {
-            color: var(--white);
-            background: rgba(255, 255, 255, .08);
-        }
+        /* =========================
+           WORKSPACE
+        ========================= */
 
-        .badge-group {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            padding: 5px 14px;
-            background: rgba(255, 255, 255, .08);
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, .75);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-        }
-
-        .badge i {
-            color: var(--accent);
-            font-size: 11px;
-        }
-
-        .badge.accent {
-            color: var(--accent);
-            background: rgba(0, 184, 148, .18);
-        }
-
-        /* ── grid ── */
-        .grid {
+        .workspace {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            grid-template-columns: minmax(420px, .9fr) minmax(500px, 1.1fr);
+            gap: 22px;
+            align-items: start;
         }
 
         .panel {
-            padding: 26px 28px 30px;
-            background: var(--white);
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius);
+            background: rgba(255,255,255,.96);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
             box-shadow: var(--shadow);
-            transition: box-shadow var(--transition);
+            overflow: hidden;
         }
 
         .panel:hover {
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 22px 16px;
+            border-bottom: 1px solid #f0f1f3;
         }
 
         .panel-title {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 20px;
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--primary);
         }
 
-        .panel-title i {
-            color: var(--accent);
-            font-size: 16px;
-        }
-
-        .panel-title .count {
-            margin-left: auto;
-            padding: 3px 14px;
-            background: #e6f9f4;
+        .panel-title-icon {
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
             color: var(--accent-dark);
+            background: var(--accent-soft);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .panel-title h3 {
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .panel-title p {
+            margin-top: 2px;
+            color: var(--muted-2);
+            font-size: 10px;
+        }
+
+        .counter {
+            min-width: 28px;
+            padding: 5px 9px;
+            text-align: center;
+            color: var(--accent-dark);
+            background: var(--accent-soft);
             border-radius: 999px;
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 700;
         }
 
-        /* ── upload ── */
+        .panel-body {
+            padding: 20px 22px 22px;
+        }
+
+        /* =========================
+           SECTION
+        ========================= */
+
+        .tool-section {
+            padding: 17px 0;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .tool-section:first-child {
+            padding-top: 0;
+        }
+
+        .tool-section:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .section-heading i {
+            color: var(--accent);
+            font-size: 13px;
+        }
+
+        .section-heading h4 {
+            font-size: 12px;
+            font-weight: 750;
+            color: var(--text-2);
+        }
+
+        .section-heading span {
+            margin-left: auto;
+            color: var(--muted-2);
+            font-size: 10px;
+        }
+
+        /* =========================
+           UPLOAD
+        ========================= */
+
         .upload-area {
             position: relative;
-            padding: 34px 20px 30px;
+            min-height: 155px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            background: var(--gray-50);
-            border: 2px dashed var(--gray-300);
-            border-radius: var(--radius-sm);
+            padding: 20px;
+            border: 1.5px dashed #cbd5e1;
+            border-radius: var(--radius-lg);
+            background: #fafbfc;
             cursor: pointer;
             transition: var(--transition);
         }
 
         .upload-area:hover,
         .upload-area.dragover {
-            background: #e6f9f4;
             border-color: var(--accent);
-            box-shadow: inset 0 0 0 3px var(--accent-glow);
+            background: var(--accent-soft);
+            transform: translateY(-1px);
         }
 
-        .upload-area input[type="file"] {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .upload-area .icon {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--gray-400);
-            font-size: 40px;
-            transition: var(--transition);
-        }
-
-        .upload-area:hover .icon {
-            color: var(--accent);
-            transform: translateY(-2px);
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 10px;
+            color: var(--accent-dark);
+            background: white;
+            border: 1px solid #d1fae5;
+            border-radius: 14px;
+            font-size: 18px;
+            box-shadow: 0 5px 15px rgba(16,185,129,.08);
         }
 
         .upload-area strong {
             color: var(--accent-dark);
         }
 
-        .upload-area .hint {
-            margin-top: 6px;
-            color: var(--gray-400);
+        .upload-area .main-text {
+            color: var(--text-2);
             font-size: 12px;
+            font-weight: 600;
         }
 
-        /* ── file list ── */
+        .upload-hint {
+            margin-top: 6px;
+            color: var(--muted-2);
+            font-size: 10px;
+        }
+
+        .upload-area input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* =========================
+           FILE LIST
+        ========================= */
+
         .file-list-wrapper {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 14px;
+            gap: 8px;
+            margin-top: 10px;
         }
 
         .file-list {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            max-height: 92px;
+            max-height: 75px;
             overflow-y: auto;
             flex: 1;
-            padding: 2px 0;
         }
 
         .file-tag {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 4px 10px 4px 12px;
-            background: var(--gray-100);
+            max-width: 190px;
+            height: 29px;
+            padding: 0 8px 0 10px;
+            color: var(--text-2);
+            background: #f3f4f6;
             border-radius: 999px;
-            font-size: 12px;
-            color: var(--gray-700);
-            white-space: nowrap;
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 10px;
+        }
+
+        .file-tag i {
+            color: var(--accent);
         }
 
         .file-tag .remove {
-            color: #dc2626;
+            color: var(--danger);
             cursor: pointer;
-            font-weight: 700;
             font-size: 14px;
-            line-height: 1;
-            padding: 0 2px;
-            transition: var(--transition);
-        }
-
-        .file-tag .remove:hover {
-            color: #b91c1c;
-            transform: scale(1.2);
+            padding: 1px 3px;
         }
 
         .clear-all-btn {
-            flex-shrink: 0;
-            padding: 4px 14px;
-            background: #fee2e2;
-            color: #b91c1c;
-            border: none;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
+            height: 29px;
+            padding: 0 10px;
             display: flex;
             align-items: center;
             gap: 5px;
-            font-family: var(--font);
-        }
-
-        .clear-all-btn:hover:not(:disabled) {
-            background: #fecaca;
-            transform: scale(1.02);
+            border: 0;
+            border-radius: 999px;
+            background: var(--danger-soft);
+            color: var(--danger);
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
         }
 
         .clear-all-btn:disabled {
@@ -398,197 +440,173 @@
         .status-bar {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin: 12px 0 18px;
-            font-size: 13px;
-            color: var(--gray-500);
+            gap: 7px;
+            margin-top: 9px;
+            color: var(--muted);
+            font-size: 10px;
         }
 
         .status-bar b {
-            padding: 3px 14px;
-            background: #e6f9f4;
+            padding: 3px 8px;
+            background: var(--accent-soft);
             color: var(--accent-dark);
             border-radius: 999px;
-            font-weight: 700;
         }
 
-        /* ── controls ── */
+        /* =========================
+           CONTROL
+        ========================= */
+
         .control {
-            margin-top: 20px;
-        }
-
-        .control:first-of-type {
-            margin-top: 0;
+            margin-top: 16px;
         }
 
         .label-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 6px;
+            margin-bottom: 7px;
         }
 
         .label-row label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--gray-700);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 7px;
+            color: var(--text-2);
+            font-size: 11px;
+            font-weight: 650;
         }
 
         .label-row label i {
             color: var(--accent);
-            font-size: 13px;
+            font-size: 11px;
         }
 
-        .label-row .value {
-            padding: 2px 12px;
-            background: #e6f9f4;
-            color: var(--accent-dark);
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            min-width: 36px;
+        .value {
+            min-width: 38px;
+            padding: 3px 8px;
             text-align: center;
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
         }
 
         input[type="range"] {
             width: 100%;
             height: 5px;
-            -webkit-appearance: none;
             appearance: none;
-            background: var(--gray-200);
-            border-radius: 8px;
+            background: #e5e7eb;
+            border-radius: 999px;
             outline: none;
-            transition: background var(--transition);
         }
 
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
             appearance: none;
-            width: 18px;
-            height: 18px;
-            background: var(--accent);
+            width: 17px;
+            height: 17px;
+            border: 3px solid white;
             border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 2px 7px rgba(16,185,129,.35);
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 184, 148, .35);
-            transition: var(--transition);
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.12);
-            box-shadow: 0 4px 16px rgba(0, 184, 148, .45);
         }
 
         input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            background: var(--accent);
-            border: none;
+            width: 17px;
+            height: 17px;
+            border: 3px solid white;
             border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 184, 148, .35);
-        }
-
-        select {
-            width: 100%;
-            padding: 10px 14px;
-            background: var(--white);
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-sm);
-            font: inherit;
-            font-size: 13px;
-            color: var(--gray-700);
-            outline: none;
-            transition: var(--transition);
+            background: var(--accent);
+            box-shadow: 0 2px 7px rgba(16,185,129,.35);
             cursor: pointer;
         }
 
-        select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
+        /* =========================
+           WATERMARK UPLOAD
+        ========================= */
+
+        .watermark-card {
+            padding: 12px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
         }
 
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--gray-700);
-        }
-
-        .section-title i {
-            color: var(--accent);
-        }
-
-        .section-title .optional {
-            margin-left: auto;
-            color: var(--gray-400);
-            font-size: 11px;
-            font-weight: 400;
-        }
-
-        .mini-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .mini-upload {
+        .watermark-upload {
             position: relative;
-            flex: 1;
-            padding: 12px 16px;
-            text-align: center;
-            background: var(--gray-50);
-            border: 1px dashed var(--gray-300);
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            color: var(--text-2);
+            background: white;
+            border: 1px dashed #d1d5db;
+            border-radius: 9px;
             cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
             transition: var(--transition);
         }
 
-        .mini-upload:hover {
-            background: #e6f9f4;
-            border-color: var(--accent);
+        .watermark-upload:hover {
             color: var(--accent-dark);
+            border-color: var(--accent);
+            background: var(--accent-soft);
         }
 
-        .mini-upload input[type="file"] {
+        .watermark-upload input {
             position: absolute;
             inset: 0;
-            width: 100%;
-            height: 100%;
             opacity: 0;
             cursor: pointer;
         }
 
         .wm-status {
-            min-width: 120px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--accent-dark);
+            display: block;
+            margin-top: 7px;
+            color: var(--muted-2);
+            font-size: 10px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .wm-status.empty {
-            color: var(--gray-400);
-            font-weight: 400;
+        .wm-status:not(.empty) {
+            color: var(--accent-dark);
+            font-weight: 600;
         }
 
-        /* ── custom position ── */
+        /* =========================
+           POSITION
+        ========================= */
+
+        select {
+            width: 100%;
+            padding: 10px 11px;
+            color: var(--text-2);
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            outline: none;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(16,185,129,.10);
+        }
+
         .custom-position {
             display: none;
-            margin-top: 14px;
-            padding: 16px 16px 12px;
-            background: var(--gray-50);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--gray-200);
+            margin-top: 10px;
+            padding: 12px;
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 10px;
         }
 
         .custom-position.visible {
@@ -597,56 +615,94 @@
 
         .custom-position .small {
             margin-top: 8px;
-            color: var(--gray-400);
-            font-size: 11px;
+            color: var(--muted-2);
             text-align: center;
+            font-size: 9px;
         }
 
-        /* ── process button ── */
+        /* =========================
+           FORMAT
+        ========================= */
+
+        .format-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* =========================
+           PROCESS
+        ========================= */
+
         .process-btn {
             width: 100%;
-            margin-top: 26px;
-            padding: 16px 20px;
-            background: linear-gradient(145deg, var(--accent), var(--accent-dark));
-            color: var(--white);
-            border: none;
-            border-radius: var(--radius-sm);
-            font: inherit;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
+            min-height: 48px;
             display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 10px;
-            box-shadow: 0 4px 16px rgba(0, 184, 148, .25);
+            align-items: center;
+            gap: 9px;
+            margin-top: 18px;
+            border: 0;
+            border-radius: 12px;
+            color: white;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 8px 20px rgba(16,185,129,.22);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 750;
+            transition: var(--transition);
         }
 
         .process-btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(0, 184, 148, .35);
+            box-shadow: 0 12px 28px rgba(16,185,129,.30);
         }
 
         .process-btn:disabled {
-            opacity: .5;
+            opacity: .45;
             cursor: not-allowed;
-            transform: none;
             box-shadow: none;
         }
 
-        .process-btn i {
-            font-size: 16px;
+        .single-process-btn {
+            width: 100%;
+            min-height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 9px;
+            border: 1px solid #a7f3d0;
+            border-radius: 12px;
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 750;
+            transition: var(--transition);
         }
 
-        /* ── progress ── */
+        .single-process-btn:hover:not(:disabled) {
+            background: #d1fae5;
+            transform: translateY(-1px);
+        }
+
+        .single-process-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        /* =========================
+           PROGRESS
+        ========================= */
+
         .progress {
             display: none;
-            margin-top: 16px;
-            padding: 14px 16px;
-            background: var(--gray-50);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--gray-200);
+            margin-top: 12px;
+            padding: 11px;
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 10px;
         }
 
         .progress.visible {
@@ -654,27 +710,26 @@
         }
 
         .progress-track {
-            height: 6px;
+            height: 5px;
             overflow: hidden;
-            background: var(--gray-200);
+            background: #e5e7eb;
             border-radius: 999px;
         }
 
         .progress-fill {
-            width: 0%;
+            width: 0;
             height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--accent-dark));
-            border-radius: 999px;
-            transition: width .25s ease;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: inherit;
+            transition: width .2s ease;
         }
 
         .progress-info {
             display: flex;
             justify-content: space-between;
             margin-top: 6px;
-            color: var(--gray-500);
-            font-size: 12px;
-            font-weight: 500;
+            color: var(--muted);
+            font-size: 9px;
         }
 
         .progress-info #progressPercent {
@@ -682,131 +737,263 @@
             font-weight: 700;
         }
 
-        /* ── preview ── */
+        /* =========================
+           PREVIEW PANEL
+        ========================= */
+
+        .preview-panel {
+            position: sticky;
+            top: 20px;
+        }
+
+        .preview-body {
+            padding: 18px 20px 20px;
+        }
+
+        .preview-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .preview-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--text-2);
+            font-size: 11px;
+            font-weight: 650;
+        }
+
+        .preview-label i {
+            color: var(--accent);
+        }
+
+        .local-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 9px;
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
         .preview-box {
-            display: grid;
-            min-height: 340px;
-            margin-bottom: 18px;
-            place-items: center;
-            background: var(--gray-50);
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-sm);
-            overflow: hidden;
             position: relative;
+            display: grid;
+            min-height: 470px;
+            place-items: center;
+            overflow: hidden;
+            background:
+                linear-gradient(45deg, #f1f5f9 25%, transparent 25%),
+                linear-gradient(-45deg, #f1f5f9 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #f1f5f9 75%),
+                linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
+            background-size: 22px 22px;
+            background-position: 0 0, 0 11px, 11px -11px, -11px 0;
+            border: 1px solid var(--border);
+            border-radius: 15px;
         }
 
         .preview-box canvas {
             display: block;
             width: 100%;
-            height: 100%;
-            max-height: 480px;
+            height: auto;
+            max-height: 560px;
             object-fit: contain;
-            background: #fff;
+            box-shadow: 0 12px 30px rgba(15,23,42,.12);
         }
 
-        .preview-box .empty-preview {
-            color: var(--gray-400);
-            text-align: center;
-            padding: 20px;
-            font-size: 14px;
-        }
-        .preview-box .empty-preview i {
-            display: block;
-            font-size: 36px;
-            margin-bottom: 8px;
-            color: var(--gray-300);
+        /* =========================
+           THUMBNAILS
+        ========================= */
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 18px 0 10px;
         }
 
-        /* ── thumbnails ── */
-        .thumbnails-wrap {
-            margin-top: 4px;
+        .gallery-header h4 {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--text-2);
+            font-size: 11px;
+        }
+
+        .gallery-header h4 i {
+            color: var(--accent);
+        }
+
+        .gallery-header span {
+            color: var(--muted-2);
+            font-size: 9px;
         }
 
         .thumbnails {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-            gap: 10px;
-            max-height: 210px;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 8px;
+            max-height: 145px;
             overflow-y: auto;
-            padding: 2px 0;
         }
 
         .thumbnail {
             position: relative;
-            aspect-ratio: 1/1;
+            aspect-ratio: 1;
             overflow: hidden;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--radius-sm);
+            background: #f3f4f6;
+            border: 2px solid transparent;
+            border-radius: 9px;
             cursor: pointer;
             transition: var(--transition);
-            background: var(--gray-100);
         }
 
         .thumbnail:hover {
-            transform: scale(1.03);
-            border-color: var(--gray-300);
+            transform: translateY(-2px);
+            border-color: #d1d5db;
         }
 
         .thumbnail.active {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
+            box-shadow: 0 0 0 3px rgba(16,185,129,.12);
         }
 
         .thumbnail img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
             display: block;
+            object-fit: cover;
         }
 
-        .thumbnail .badge-num {
+        .thumbnail-remove {
             position: absolute;
-            top: 3px;
-            right: 3px;
-            padding: 1px 7px;
-            background: rgba(0, 0, 0, .65);
-            color: #fff;
-            border-radius: 999px;
-            font-size: 10px;
+            top: 4px;
+            left: 4px;
+            width: 23px;
+            height: 23px;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(255,255,255,.75);
+            border-radius: 50%;
+            color: white;
+            background: rgba(127,29,29,.86);
+            cursor: pointer;
+            opacity: 0;
+            transform: scale(.9);
+            transition: var(--transition);
+            z-index: 1;
+        }
+
+        .thumbnail:hover .thumbnail-remove,
+        .thumbnail-remove:focus-visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .thumbnail-remove:hover {
+            background: #dc2626;
+        }
+
+        .thumbnail-remove:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        @media (hover: none) {
+            .thumbnail-remove {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .gallery-actions {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .gallery-actions .clear-all-btn {
+            flex-shrink: 0;
+        }
+
+        .badge-num {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            min-width: 17px;
+            padding: 2px 4px;
+            text-align: center;
+            color: white;
+            background: rgba(17,24,39,.72);
+            border-radius: 5px;
+            font-size: 8px;
             font-weight: 700;
-            backdrop-filter: blur(4px);
         }
 
         .thumbnails .empty {
             grid-column: 1 / -1;
-            padding: 28px 10px;
-            color: var(--gray-400);
+            padding: 25px 10px;
             text-align: center;
-            font-size: 13px;
+            color: var(--muted-2);
+            font-size: 10px;
         }
 
-        /* ── assets ── */
+        /* =========================
+           ASSETS
+        ========================= */
+
         .assets {
             display: grid;
-            gap: 12px;
-            margin-top: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 18px;
             padding-top: 16px;
-            border-top: 1px solid var(--gray-200);
+            border-top: 1px solid #eef0f3;
+        }
+
+        .assets-title {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--text-2);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .assets-title i {
+            color: var(--accent);
         }
 
         .asset {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 9px;
+            padding: 9px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fafafa;
         }
 
         .asset-preview {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
             display: grid;
-            width: 58px;
-            height: 58px;
             place-items: center;
             overflow: hidden;
-            background: var(--gray-100);
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-sm);
-            color: var(--gray-400);
-            flex-shrink: 0;
-            font-size: 20px;
+            color: var(--muted-2);
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            font-size: 13px;
         }
 
         .asset-preview img {
@@ -817,825 +1004,2343 @@
 
         .asset-info strong {
             display: block;
-            font-size: 14px;
-            color: var(--gray-700);
+            color: var(--text-2);
+            font-size: 10px;
         }
 
         .asset-info .small {
-            color: var(--gray-400);
-            font-size: 12px;
-            margin-top: 1px;
+            margin-top: 2px;
+            color: var(--muted-2);
+            font-size: 9px;
         }
 
-        /* ── footer ── */
+        /* =========================
+           FOOTER
+        ========================= */
+
         .footer {
-            margin-top: 34px;
-            padding-top: 22px;
-            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            margin-top: 22px;
+            color: var(--muted-2);
+            font-size: 10px;
             text-align: center;
-            color: var(--gray-400);
-            font-size: 13px;
         }
 
         .footer i {
             color: var(--accent);
-            margin: 0 4px;
         }
 
         .footer .heart {
             color: #ef4444;
         }
 
-        /* ── responsive ── */
-        @media (max-width: 1024px) {
-            .grid {
-                gap: 22px;
-            }
-        }
+        /* =========================
+           RESPONSIVE
+        ========================= */
 
-        @media (max-width: 900px) {
-            .grid {
+        @media (max-width: 1050px) {
+            .workspace {
                 grid-template-columns: 1fr;
-                gap: 24px;
             }
 
-            .header {
-                padding: 14px 20px;
+            .preview-panel {
+                position: static;
             }
-            .brand-text h1 {
-                font-size: 22px;
-            }
-            .brand-logo {
-                width: 44px;
-                height: 44px;
-                font-size: 20px;
-            }
-            .brand-badge {
-                font-size: 10px;
-                padding: 3px 10px;
+
+            .preview-box {
+                min-height: 400px;
             }
         }
 
-        @media (max-width: 640px) {
-            body {
-                padding: 14px 12px 32px;
-            }
-
-            .panel {
-                padding: 18px 16px 22px;
+        @media (max-width: 700px) {
+            .app {
+                width: min(100% - 24px, 600px);
+                padding-top: 12px;
             }
 
             .header {
+                align-items: flex-start;
                 flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-                padding: 14px 16px;
+                padding: 15px;
             }
 
-            .brand-text h1 {
-                font-size: 19px;
-            }
-            .brand-logo {
-                width: 40px;
-                height: 40px;
-                font-size: 18px;
-            }
-
-            .header-actions {
-                justify-content: space-between;
+            .header-right {
                 width: 100%;
             }
 
-            .badge-group .badge:not(.accent) {
+            .header-chip {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .intro h2 {
+                font-size: 22px;
+            }
+
+            .workspace {
+                gap: 15px;
+            }
+
+            .panel-header,
+            .panel-body {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .preview-box {
+                min-height: 280px;
+            }
+
+            .assets {
+                grid-template-columns: 1fr;
+            }
+
+            .assets-title {
+                grid-column: auto;
+            }
+
+            .format-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 430px) {
+            .header-chip:nth-child(2) {
                 display: none;
             }
 
-            .mini-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .wm-status {
-                min-width: 0;
-                text-align: center;
-            }
-
-            .file-list-wrapper {
-                flex-wrap: wrap;
-            }
-
-            .file-list {
-                max-height: 70px;
-            }
-
-            .clear-all-btn {
-                padding: 4px 12px;
-                font-size: 11px;
-            }
-
-            .process-btn {
-                font-size: 14px;
-                padding: 14px 16px;
+            .intro {
+                margin-top: 5px;
             }
 
             .preview-box {
                 min-height: 240px;
             }
-            .preview-box canvas {
-                max-height: 320px;
-            }
 
             .thumbnails {
-                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-                gap: 7px;
-                max-height: 160px;
+                grid-template-columns: repeat(5, 1fr);
             }
-        }
 
-        @media (max-width: 420px) {
-            .brand-text h1 {
-                font-size: 17px;
+            .file-list-wrapper {
+                flex-direction: column;
             }
-            .brand-badge {
-                font-size: 9px;
-                padding: 2px 8px;
-            }
-            .brand-logo {
-                width: 36px;
-                height: 36px;
-                font-size: 16px;
-            }
-            .badge {
-                font-size: 10px;
-                padding: 3px 10px;
+
+            .clear-all-btn {
+                width: fit-content;
             }
         }
     </style>
 </head>
 
 <body>
-    <main class="app">
 
-        <!-- ─── HEADER ─── -->
-        <header class="header">
-            <a class="brand" href="index.html" aria-label="ImageTools home">
-                <span class="brand-logo"><i class="fas fa-water"></i></span>
-                <div class="brand-text">
-                    <h1>Image <span>Watermark</span></h1>
-                    <span class="brand-badge"><i class="fas fa-bolt"></i> 3000×3000</span>
-                </div>
-            </a>
+<main class="app">
 
-            <div class="header-actions">
-                <a class="home-link" href="index.html"><i class="fas fa-home"></i> Home</a>
-                <div class="badge-group">
-                    <span class="badge"><i class="fas fa-layer-group"></i> Batch</span>
-                    <span class="badge accent"><i class="fas fa-lock"></i> Local</span>
-                    <span class="badge"><i class="fas fa-arrows-alt"></i> Full + Corner</span>
-                </div>
+    <!-- HEADER -->
+    <header class="header">
+
+        <a href="#" class="brand">
+            <div class="brand-icon">
+                <i class="fas fa-water"></i>
             </div>
-        </header>
 
-        <!-- ─── GRID ─── -->
-        <section class="grid">
+            <div class="brand-text">
+                <h1>Image <span>Watermark</span></h1>
+                <p>Professional watermarking, directly in your browser</p>
+            </div>
+        </a>
 
-            <!-- ─── LEFT PANEL ─── -->
-            <section class="panel">
-                <h2 class="panel-title">
-                    <i class="fas fa-images"></i> Main Images
-                    <span class="count" id="imageCount">0</span>
-                </h2>
+        <div class="header-right">
+            <div class="header-chip">
+                <i class="fas fa-layer-group"></i>
+                Batch Processing
+            </div>
 
-                <!-- Upload -->
-                <div class="upload-area" id="imageDrop">
-                    <span class="icon"><i class="fas fa-cloud-upload-alt"></i></span>
-                    <div>Drop images here or <strong>browse</strong></div>
-                    <div class="hint">JPG, PNG, WebP · Batch upload</div>
-                    <input id="imageInput" type="file" accept="image/*" multiple />
+            <div class="header-chip green">
+                <i class="fas fa-shield-halved"></i>
+                100% Local
+            </div>
+
+            <div class="header-chip">
+                <i class="fas fa-expand"></i>
+                3000 × 3000
+            </div>
+        </div>
+
+    </header>
+
+
+    <!-- INTRO -->
+    <div class="intro">
+        <h2>Watermark your images</h2>
+        <p>Upload your images, customize the watermark, preview the result and download everything in one click.</p>
+    </div>
+
+
+    <!-- WORKSPACE -->
+    <section class="workspace">
+
+        <!-- ================= LEFT ================= -->
+
+        <section class="panel">
+
+            <div class="panel-header">
+                <div class="panel-title">
+                    <div class="panel-title-icon">
+                        <i class="fas fa-sliders"></i>
+                    </div>
+
+                    <div>
+                        <h3>Watermark Settings</h3>
+                        <p>Configure your images</p>
+                    </div>
                 </div>
 
-                <!-- File list + Clear All -->
-                <div class="file-list-wrapper">
-                    <div class="file-list" id="fileList"></div>
-                    <button class="clear-all-btn" id="clearAllBtn" disabled>
-                        <i class="fas fa-trash-alt"></i> Clear All
-                    </button>
+                <span class="counter" id="imageCount">0</span>
+            </div>
+
+            <div class="panel-body">
+
+                <!-- UPLOAD SECTION -->
+                <div class="tool-section">
+
+                    <div class="section-heading">
+                        <i class="fas fa-cloud-arrow-up"></i>
+                        <h4>1. Upload Images</h4>
+                        <span>JPG · PNG · WebP</span>
+                    </div>
+
+                    <div class="upload-area" id="imageDrop">
+
+                        <div class="upload-icon">
+                            <i class="fas fa-images"></i>
+                        </div>
+
+                        <div class="main-text">
+                            Drop images here or <strong>browse files</strong>
+                        </div>
+
+                        <div class="upload-hint">
+                            Multiple images supported · Processed locally
+                        </div>
+
+                        <input
+                            id="imageInput"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                        />
+
+                    </div>
+
+                    <div class="file-list-wrapper">
+
+                        <div class="file-list" id="fileList"></div>
+
+                        <button
+                            class="clear-all-btn"
+                            id="clearAllBtn"
+                            disabled
+                        >
+                            <i class="fas fa-trash"></i>
+                            Clear
+                        </button>
+
+                    </div>
+
+                    <div class="status-bar">
+                        <span>Uploaded</span>
+                        <b id="uploadedCount">0</b>
+                        <span>images</span>
+                    </div>
+
                 </div>
 
-                <div class="status-bar">
-                    Uploaded <b id="uploadedCount">0</b> images
-                </div>
 
-                <!-- Padding -->
-                <div class="control">
-                    <div class="label-row">
-                        <label><i class="fas fa-expand"></i> White Padding</label>
-                        <span class="value" id="paddingLabel">4%</span>
-                    </div>
-                    <input id="padding" type="range" min="0" max="40" value="4" />
-                </div>
+                <!-- BASIC SETTINGS -->
+                <div class="tool-section">
 
-                <!-- Full-screen watermark -->
-                <div class="control">
-                    <div class="section-title">
-                        <i class="fas fa-vector-square"></i> Full-Screen Watermark
-                        <span class="optional">optional</span>
-                    </div>
-                    <div class="mini-row">
-                        <label class="mini-upload">
-                            <i class="fas fa-file-image"></i> Upload PNG
-                            <input id="fullInput" type="file" accept="image/png" />
-                        </label>
-                        <span class="wm-status empty" id="fullStatus">No file selected</span>
-                    </div>
-                    <div class="label-row" style="margin-top:8px">
-                        <label><i class="fas fa-adjust"></i> Opacity</label>
-                        <span class="value" id="opacityLabel">4%</span>
-                    </div>
-                    <input id="opacity" type="range" min="0" max="100" value="4" />
-                </div>
-
-                <!-- Corner watermark -->
-                <div class="control">
-                    <div class="section-title">
-                        <i class="fas fa-thumbtack"></i> Corner Watermark
-                        <span class="optional">optional</span>
-                    </div>
-                    <div class="mini-row">
-                        <label class="mini-upload">
-                            <i class="fas fa-file-image"></i> Upload PNG
-                            <input id="cornerInput" type="file" accept="image/png" />
-                        </label>
-                        <span class="wm-status empty" id="cornerStatus">No file selected</span>
+                    <div class="section-heading">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <h4>2. Image Settings</h4>
                     </div>
 
-                    <div class="label-row" style="margin-top:8px">
-                        <label><i class="fas fa-arrows-alt-h"></i> Size</label>
-                        <span class="value" id="cornerSizeLabel">28%</span>
-                    </div>
-                    <input id="cornerSize" type="range" min="5" max="40" value="28" />
+                    <div class="control">
 
-                    <div class="label-row" style="margin-top:12px">
-                        <label><i class="fas fa-location-dot"></i> Position</label>
-                    </div>
-                    <select id="position">
-                        <option value="top-left">Top Left</option>
-                        <option value="top-right">Top Right</option>
-                        <option value="bottom-left">Bottom Left</option>
-                        <option value="bottom-right" selected>Bottom Right</option>
-                        <option value="custom">Customize</option>
-                    </select>
-
-                    <div class="custom-position" id="customPosition">
                         <div class="label-row">
-                            <label>Horizontal</label>
-                            <span class="value" id="customXLabel">97%</span>
-                        </div>
-                        <input id="customX" type="range" min="0" max="100" value="97" />
+                            <label>
+                                <i class="fas fa-expand"></i>
+                                White Padding
+                            </label>
 
-                        <div class="label-row" style="margin-top:10px">
-                            <label>Vertical</label>
-                            <span class="value" id="customYLabel">98%</span>
+                            <span class="value" id="paddingLabel">
+                                4%
+                            </span>
                         </div>
-                        <input id="customY" type="range" min="0" max="100" value="98" />
 
-                        <div class="small">0% = left/top · 100% = right/bottom</div>
+                        <input
+                            id="padding"
+                            type="range"
+                            min="0"
+                            max="40"
+                            value="4"
+                        />
+
                     </div>
+
                 </div>
 
-                <!-- Output format -->
-                <div class="control">
-                    <div class="label-row">
-                        <label><i class="fas fa-file-export"></i> Output Format</label>
-                    </div>
-                    <select id="format">
-                        <option value="image/png">PNG</option>
-                        <option value="image/jpeg">JPEG</option>
-                        <option value="image/webp">WebP</option>
-                        <option value="image/bmp">BMP</option>
-                    </select>
-                    <div class="hint" style="margin-top:4px">JPEG &amp; WebP use 92% quality.</div>
-                </div>
 
-                <!-- Process -->
-                <button class="process-btn" id="processButton" disabled>
-                    <i class="fas fa-images"></i> Upload images first
-                </button>
+                <!-- FULL WATERMARK -->
+                <div class="tool-section">
 
-                <!-- Progress -->
-                <div class="progress" id="progress">
-                    <div class="progress-track">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <div class="progress-info">
-                        <span id="progressPercent">0%</span>
-                        <span id="progressStatus">Ready</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ─── RIGHT PANEL ─── -->
-            <section class="panel">
-                <h2 class="panel-title">
-                    <i class="fas fa-eye"></i> Live Preview
-                    <span class="count" id="previewCount">0</span>
-                </h2>
-
-                <div class="preview-box">
-                    <canvas id="canvas" width="500" height="500"></canvas>
-                </div>
-
-                <div class="thumbnails-wrap">
-                    <div class="panel-title" style="margin-bottom:10px;font-size:14px">
-                        <i class="fas fa-th"></i> Uploaded Images
-                    </div>
-                    <div class="thumbnails" id="thumbnails">
-                        <div class="empty">Upload images to see previews.</div>
-                    </div>
-                </div>
-
-                <!-- Watermark assets -->
-                <div class="assets">
-                    <div class="section-title">
-                        <i class="fas fa-stamp"></i> Watermark Assets
+                    <div class="section-heading">
+                        <i class="fas fa-vector-square"></i>
+                        <h4>3. Full-Screen Watermark</h4>
+                        <span>Optional</span>
                     </div>
 
-                    <div class="asset">
-                        <div class="asset-preview" id="fullPreview">
-                            <i class="fas fa-vector-square"></i>
+                    <div class="watermark-card">
+
+                        <label class="watermark-upload">
+                            <i class="fas fa-file-image"></i>
+                            Upload PNG watermark
+
+                            <input
+                                id="fullInput"
+                                type="file"
+                                accept="image/png"
+                            />
+                        </label>
+
+                        <span
+                            class="wm-status empty"
+                            id="fullStatus"
+                        >
+                            No file selected
+                        </span>
+
+                        <div class="control">
+
+                            <div class="label-row">
+
+                                <label>
+                                    <i class="fas fa-adjust"></i>
+                                    Opacity
+                                </label>
+
+                                <span
+                                    class="value"
+                                    id="opacityLabel"
+                                >
+                                    5%
+                                </span>
+
+                            </div>
+
+                            <input
+                                id="opacity"
+                                type="range"
+                                min="0"
+                                max="100"
+                                value="5"
+                            />
+
                         </div>
-                        <div class="asset-info">
-                            <strong>Full-screen</strong>
-                            <div class="small" id="fullInfo">Not set</div>
-                        </div>
+
                     </div>
 
-                    <div class="asset">
-                        <div class="asset-preview" id="cornerPreview">
-                            <i class="fas fa-thumbtack"></i>
-                        </div>
-                        <div class="asset-info">
-                            <strong>Corner</strong>
-                            <div class="small" id="cornerInfo">Not set</div>
-                        </div>
-                    </div>
                 </div>
-            </section>
+
+
+                <!-- CORNER WATERMARK -->
+                <div class="tool-section">
+
+                    <div class="section-heading">
+                        <i class="fas fa-thumbtack"></i>
+                        <h4>4. Corner Watermark</h4>
+                        <span>Optional</span>
+                    </div>
+
+                    <div class="watermark-card">
+
+                        <label class="watermark-upload">
+                            <i class="fas fa-file-image"></i>
+                            Upload PNG watermark
+
+                            <input
+                                id="cornerInput"
+                                type="file"
+                                accept="image/png"
+                            />
+                        </label>
+
+                        <span
+                            class="wm-status empty"
+                            id="cornerStatus"
+                        >
+                            No file selected
+                        </span>
+
+
+                        <div class="control">
+
+                            <div class="label-row">
+                                <label>
+                                    <i class="fas fa-arrows-left-right"></i>
+                                    Size
+                                </label>
+
+                                <span
+                                    class="value"
+                                    id="cornerSizeLabel"
+                                >
+                                    24%
+                                </span>
+                            </div>
+
+                            <input
+                                id="cornerSize"
+                                type="range"
+                                min="5"
+                                max="40"
+                                value="24"
+                            />
+
+                        </div>
+
+
+                        <div class="control">
+
+                            <div class="label-row">
+
+                                <label>
+                                    <i class="fas fa-adjust"></i>
+                                    Opacity
+                                </label>
+
+                                <span
+                                    class="value"
+                                    id="cornerOpacityLabel"
+                                >
+                                    100%
+                                </span>
+
+                            </div>
+
+                            <input
+                                id="cornerOpacity"
+                                type="range"
+                                min="0"
+                                max="100"
+                                value="100"
+                            />
+
+                        </div>
+
+
+                        <div class="control">
+
+                            <div class="label-row">
+
+                                <label>
+                                    <i class="fas fa-location-dot"></i>
+                                    Position
+                                </label>
+
+                            </div>
+
+                            <select id="position">
+                                <option value="top-left">
+                                    Top Left
+                                </option>
+
+                                <option value="top-right">
+                                    Top Right
+                                </option>
+
+                                <option value="bottom-left">
+                                    Bottom Left
+                                </option>
+
+                                <option
+                                    value="bottom-right"
+                                    selected
+                                >
+                                    Bottom Right
+                                </option>
+
+                                <option value="custom">
+                                    Customize
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div
+                            class="custom-position"
+                            id="customPosition"
+                        >
+
+                            <div class="label-row">
+                                <label>Horizontal</label>
+
+                                <span
+                                    class="value"
+                                    id="customXLabel"
+                                >
+                                    97%
+                                </span>
+                            </div>
+
+                            <input
+                                id="customX"
+                                type="range"
+                                min="0"
+                                max="100"
+                                value="97"
+                            />
+
+
+                            <div
+                                class="label-row"
+                                style="margin-top:12px"
+                            >
+
+                                <label>Vertical</label>
+
+                                <span
+                                    class="value"
+                                    id="customYLabel"
+                                >
+                                    98%
+                                </span>
+
+                            </div>
+
+                            <input
+                                id="customY"
+                                type="range"
+                                min="0"
+                                max="100"
+                                value="98"
+                            />
+
+                            <div class="small">
+                                0% = left/top · 100% = right/bottom
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- EXPORT -->
+                <div class="tool-section">
+
+                    <div class="section-heading">
+                        <i class="fas fa-file-export"></i>
+                        <h4>5. Export</h4>
+                    </div>
+
+                    <div class="format-row">
+
+                        <div>
+                            <div class="label-row">
+                                <label>Output Format</label>
+                            </div>
+
+                            <select id="format">
+                                <option value="image/png">
+                                    PNG
+                                </option>
+
+                                <option value="image/jpeg">
+                                    JPEG
+                                </option>
+
+                                <option value="image/webp">
+                                    WebP
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <div class="label-row">
+                                <label>Quality</label>
+                            </div>
+
+                            <select disabled>
+                                <option>92% High Quality</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        class="process-btn"
+                        id="processButton"
+                        disabled
+                    >
+                        <i class="fas fa-images"></i>
+                        Upload images first
+                    </button>
+
+                    <button
+                        class="single-process-btn"
+                        id="singleProcessButton"
+                        disabled
+                    >
+                        <i class="fas fa-download"></i>
+                        Download Current Image
+                    </button>
+
+                    <div style="margin-top:7px;color:#9ca3af;font-size:9px;text-align:center;">
+                        Bulk download creates one ZIP file to avoid browser popup/download blocking.
+                    </div>
+
+
+                    <div
+                        class="progress"
+                        id="progress"
+                    >
+
+                        <div class="progress-track">
+                            <div
+                                class="progress-fill"
+                                id="progressFill"
+                            ></div>
+                        </div>
+
+                        <div class="progress-info">
+                            <span id="progressPercent">
+                                0%
+                            </span>
+
+                            <span id="progressStatus">
+                                Ready
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </section>
 
-        <!-- ─── FOOTER ─── -->
-        <footer class="footer">
-            <i class="fas fa-shield-alt"></i> All processing happens locally in your browser ·
-            <i class="fas fa-lock"></i> No uploads ·
-            <i class="fas fa-heart heart"></i> Free to use
-        </footer>
 
-    </main>
+        <!-- ================= RIGHT ================= -->
 
-    <!-- ─── SCRIPT ─── -->
-    <script>
-        (() => {
-            'use strict';
+        <section class="panel preview-panel">
 
-            // ── DOM refs ──
-            const $ = id => document.getElementById(id);
+            <div class="panel-header">
 
-            const canvas = $('canvas');
-            const ctx = canvas.getContext('2d');
+                <div class="panel-title">
 
-            const OUTPUT_SIZE = 3000;
+                    <div class="panel-title-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+
+                    <div>
+                        <h3>Live Preview</h3>
+                        <p>See changes instantly</p>
+                    </div>
+
+                </div>
+
+                <span
+                    class="counter"
+                    id="previewCount"
+                >
+                    0
+                </span>
+
+            </div>
+
+
+            <div class="preview-body">
+
+                <div class="preview-toolbar">
+
+                    <div class="preview-label">
+                        <i class="fas fa-image"></i>
+                        Current image
+                    </div>
+
+                    <div class="local-badge">
+                        <i class="fas fa-lock"></i>
+                        Private & Local
+                    </div>
+
+                </div>
+
+
+                <!-- PREVIEW -->
+                <div class="preview-box">
+
+                    <canvas
+                        id="canvas"
+                        width="500"
+                        height="500"
+                    ></canvas>
+
+                </div>
+
+
+                <!-- GALLERY -->
+                <div class="gallery-header">
+
+                    <h4>
+                        <i class="fas fa-grid-2"></i>
+                        Uploaded Images
+                    </h4>
+
+                    <div class="gallery-actions">
+                        <span>Click an image to preview</span>
+                        <button
+                            class="clear-all-btn"
+                            id="galleryClearBtn"
+                            type="button"
+                            disabled
+                            title="Remove all uploaded images"
+                        >
+                            <i class="fas fa-trash"></i>
+                            Clear All
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="thumbnails"
+                    id="thumbnails"
+                >
+                    <div class="empty">
+                        Upload images to see previews.
+                    </div>
+                </div>
+
+
+                <!-- ASSETS -->
+                <div class="assets">
+
+                    <div class="assets-title">
+                        <i class="fas fa-stamp"></i>
+                        Watermark Assets
+                    </div>
+
+
+                    <div class="asset">
+
+                        <div
+                            class="asset-preview"
+                            id="fullPreview"
+                        >
+                            <i class="fas fa-vector-square"></i>
+                        </div>
+
+                        <div class="asset-info">
+
+                            <strong>
+                                Full-screen
+                            </strong>
+
+                            <div
+                                class="small"
+                                id="fullInfo"
+                            >
+                                Not set
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="asset">
+
+                        <div
+                            class="asset-preview"
+                            id="cornerPreview"
+                        >
+                            <i class="fas fa-thumbtack"></i>
+                        </div>
+
+                        <div class="asset-info">
+
+                            <strong>
+                                Corner
+                            </strong>
+
+                            <div
+                                class="small"
+                                id="cornerInfo"
+                            >
+                                Not set
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer class="footer">
+
+        <i class="fas fa-shield-halved"></i>
+        Processing happens locally in your browser
+
+        <span>·</span>
+
+        <i class="fas fa-lock"></i>
+        No image uploads
+
+        <span>·</span>
+
+        <i class="fas fa-heart heart"></i>
+        Free to use
+
+    </footer>
+
+</main>
+
+
+<script>
+(() => {
+
+    'use strict';
+
+    const $ = id => document.getElementById(id);
+
+    const canvas = $('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const OUTPUT_SIZE = 3000;
             const QUALITY = 0.92;
 
-            // ── state ──
-            const state = {
-                images: [], // { file, src }
-                full: null, // { file, src, image }
-                corner: null, // { file, src, image }
-                selected: 0,
-                busy: false,
-            };
+    const state = {
+        images: [],
+        full: null,
+        corner: null,
+        selected: 0,
+        busy: false,
+        previewQueued: false,
+        previewVersion: 0
+    };
 
-            // ── helpers ──
-            const readDataUrl = file =>
-                new Promise((resolve, reject) => {
-                    const r = new FileReader();
-                    r.onload = () => resolve(r.result);
-                    r.onerror = reject;
-                    r.readAsDataURL(file);
-                });
 
-            const loadImage = src =>
-                new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = reject;
-                    img.src = src;
-                });
+    /* =========================
+       HELPERS
+    ========================= */
 
-            function getSettings() {
-                return {
-                    padding: Number($('padding').value),
-                    opacity: Number($('opacity').value),
-                    cornerSize: Number($('cornerSize').value),
-                    position: $('position').value,
-                    customX: Number($('customX').value),
-                    customY: Number($('customY').value),
-                    format: $('format').value,
-                };
+    const readDataUrl = file =>
+        Promise.resolve(URL.createObjectURL(file));
+
+
+    const loadImage = src =>
+        new Promise((resolve, reject) => {
+
+            const img = new Image();
+
+            img.onload = () => resolve(img);
+
+            img.onerror = () =>
+                reject(
+                    new Error('The image could not be loaded.')
+                );
+
+            img.src = src;
+
+        });
+
+
+    function requestPreview() {
+
+        state.previewVersion++;
+
+        if (state.previewQueued)
+            return;
+
+        state.previewQueued = true;
+
+        requestAnimationFrame(async () => {
+
+            state.previewQueued = false;
+
+            await renderPreview(
+                state.previewVersion
+            );
+
+        });
+
+    }
+
+
+    function getSettings() {
+
+        return {
+
+            padding:
+                Number($('padding').value),
+
+            opacity:
+                Number($('opacity').value),
+
+            cornerSize:
+                Number($('cornerSize').value),
+
+            cornerOpacity:
+                Number($('cornerOpacity').value),
+
+            position:
+                $('position').value,
+
+            customX:
+                Number($('customX').value),
+
+            customY:
+                Number($('customY').value),
+
+            format:
+                $('format').value
+
+        };
+
+    }
+
+
+    /* =========================
+       DRAW WATERMARK
+    ========================= */
+
+    function drawWatermarked(
+        image,
+        fullImg,
+        cornerImg,
+        size
+    ) {
+
+        const settings = getSettings();
+
+        const output =
+            document.createElement('canvas');
+
+        output.width = size;
+        output.height = size;
+
+        const c =
+            output.getContext('2d');
+
+        if (!c)
+            throw new Error(
+                'Canvas rendering is unavailable.'
+            );
+
+
+        /* White background */
+
+        c.fillStyle = '#ffffff';
+
+        c.fillRect(
+            0,
+            0,
+            size,
+            size
+        );
+
+
+        /* Image sizing */
+
+        const pad =
+            size * settings.padding / 100;
+
+        const avail =
+            size - pad * 2;
+
+        const ratio =
+            image.width / image.height;
+
+        let w;
+        let h;
+
+        if (ratio >= 1) {
+
+            w = avail;
+            h = avail / ratio;
+
+        } else {
+
+            h = avail;
+            w = avail * ratio;
+
+        }
+
+
+        c.imageSmoothingEnabled = true;
+
+        c.imageSmoothingQuality = 'high';
+
+
+        c.drawImage(
+            image,
+            (size - w) / 2,
+            (size - h) / 2,
+            w,
+            h
+        );
+
+
+        /* Full watermark */
+
+        if (
+            fullImg &&
+            settings.opacity > 0
+        ) {
+
+            c.globalAlpha =
+                settings.opacity / 100;
+
+            c.drawImage(
+                fullImg,
+                0,
+                0,
+                size,
+                size
+            );
+
+            c.globalAlpha = 1;
+
+        }
+
+
+        /* Corner watermark */
+
+        if (cornerImg) {
+
+            const wmSize =
+                size *
+                settings.cornerSize /
+                100;
+
+            const wmRatio =
+                cornerImg.width /
+                cornerImg.height;
+
+            let ww =
+                wmRatio >= 1
+                    ? wmSize
+                    : wmSize * wmRatio;
+
+            let wh =
+                wmRatio >= 1
+                    ? wmSize / wmRatio
+                    : wmSize;
+
+
+            const margin =
+                pad * 0.5 + 8;
+
+            let x;
+            let y;
+
+
+            if (
+                settings.position ===
+                'custom'
+            ) {
+
+                const maxX =
+                    size -
+                    ww -
+                    margin * 2;
+
+                const maxY =
+                    size -
+                    wh -
+                    margin * 2;
+
+                x =
+                    margin +
+                    maxX *
+                    settings.customX /
+                    100;
+
+                y =
+                    margin +
+                    maxY *
+                    settings.customY /
+                    100;
+
+            } else {
+
+                x = margin;
+                y = margin;
+
+                if (
+                    settings.position
+                        .includes('right')
+                ) {
+                    x =
+                        size -
+                        ww -
+                        margin;
+                }
+
+                if (
+                    settings.position
+                        .includes('bottom')
+                ) {
+                    y =
+                        size -
+                        wh -
+                        margin;
+                }
+
             }
 
-            // ── watermark drawing ──
-            function drawWatermarked(image, fullImg, cornerImg, size) {
-                const settings = getSettings();
-                const output = document.createElement('canvas');
-                output.width = size;
-                output.height = size;
-                const c = output.getContext('2d');
 
-                // white background
-                c.fillStyle = '#ffffff';
-                c.fillRect(0, 0, size, size);
+            c.globalAlpha =
+                settings.cornerOpacity /
+                100;
 
-                const pad = size * settings.padding / 100;
-                const avail = size - pad * 2;
-                const ratio = image.width / image.height;
+            c.drawImage(
+                cornerImg,
+                x,
+                y,
+                ww,
+                wh
+            );
 
-                let w, h;
-                if (ratio >= 1) {
-                    w = avail;
-                    h = avail / ratio;
-                } else {
-                    h = avail;
-                    w = avail * ratio;
-                }
+            c.globalAlpha = 1;
 
-                c.imageSmoothingEnabled = true;
-                c.imageSmoothingQuality = 'high';
-                c.drawImage(image, (size - w) / 2, (size - h) / 2, w, h);
+        }
 
-                // full-screen watermark
-                if (fullImg && settings.opacity > 0) {
-                    c.globalAlpha = settings.opacity / 100;
-                    c.drawImage(fullImg, 0, 0, size, size);
-                    c.globalAlpha = 1;
-                }
+        return output;
 
-                // corner watermark
-                if (cornerImg) {
-                    const wmSize = size * settings.cornerSize / 100;
-                    const wmRatio = cornerImg.width / cornerImg.height;
+    }
 
-                    let ww = wmRatio >= 1 ? wmSize : wmSize * wmRatio;
-                    let wh = wmRatio >= 1 ? wmSize / wmRatio : wmSize;
 
-                    const margin = pad * 0.5 + 8;
-                    let x, y;
+    /* =========================
+       PREVIEW
+    ========================= */
 
-                    if (settings.position === 'custom') {
-                        const maxX = size - ww - margin * 2;
-                        const maxY = size - wh - margin * 2;
-                        x = margin + maxX * settings.customX / 100;
-                        y = margin + maxY * settings.customY / 100;
-                    } else {
-                        x = margin;
-                        y = margin;
-                        if (settings.position.includes('right')) x = size - ww - margin;
-                        if (settings.position.includes('bottom')) y = size - wh - margin;
-                    }
+    async function renderPreview(
+        version = state.previewVersion
+    ) {
 
-                    // corner watermark also respects opacity (same as full)
-                    if (settings.opacity > 0) {
-                        c.globalAlpha = settings.opacity / 100;
-                    }
-                    c.drawImage(cornerImg, x, y, ww, wh);
-                    c.globalAlpha = 1;
-                }
+        if (!state.images.length) {
 
-                return output;
+            ctx.clearRect(
+                0,
+                0,
+                500,
+                500
+            );
+
+            ctx.fillStyle =
+                '#f8fafc';
+
+            ctx.fillRect(
+                0,
+                0,
+                500,
+                500
+            );
+
+            ctx.fillStyle =
+                '#94a3b8';
+
+            ctx.textAlign =
+                'center';
+
+            ctx.textBaseline =
+                'middle';
+
+            ctx.font =
+                '600 16px Inter, sans-serif';
+
+            ctx.fillText(
+                'Upload an image',
+                250,
+                230
+            );
+
+            ctx.font =
+                '400 12px Inter, sans-serif';
+
+            ctx.fillText(
+                'Your live preview will appear here',
+                250,
+                255
+            );
+
+            return;
+        }
+
+
+        try {
+
+            const idx =
+                Math.min(
+                    state.selected,
+                    state.images.length - 1
+                );
+
+            const item =
+                state.images[idx];
+
+            const img =
+                item.image ||
+                (
+                    item.image =
+                    await loadImage(item.src)
+                );
+
+            const full =
+                state.full
+                    ? state.full.image
+                    : null;
+
+            const corner =
+                state.corner
+                    ? state.corner.image
+                    : null;
+
+            const result =
+                drawWatermarked(
+                    img,
+                    full,
+                    corner,
+                    500
+                );
+
+
+            if (
+                version !==
+                state.previewVersion
+            )
+                return;
+
+
+            ctx.clearRect(
+                0,
+                0,
+                500,
+                500
+            );
+
+            ctx.drawImage(
+                result,
+                0,
+                0
+            );
+
+        } catch (error) {
+
+            if (
+                version ===
+                state.previewVersion
+            ) {
+
+                ctx.clearRect(
+                    0,
+                    0,
+                    500,
+                    500
+                );
+
+                ctx.fillStyle =
+                    '#f8fafc';
+
+                ctx.fillRect(
+                    0,
+                    0,
+                    500,
+                    500
+                );
+
+                ctx.fillStyle =
+                    '#94a3b8';
+
+                ctx.textAlign =
+                    'center';
+
+                ctx.textBaseline =
+                    'middle';
+
+                ctx.font =
+                    '500 14px Inter, sans-serif';
+
+                ctx.fillText(
+                    'Preview unavailable',
+                    250,
+                    250
+                );
+
             }
 
-            // ── render preview ──
-            async function renderPreview() {
-                if (!state.images.length) {
-                    ctx.clearRect(0, 0, 500, 500);
-                    ctx.fillStyle = '#f8fafc';
-                    ctx.fillRect(0, 0, 500, 500);
-                    ctx.fillStyle = '#94a3b8';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.font = '500 16px Inter, sans-serif';
-                    ctx.fillText('Upload images', 250, 220);
-                    ctx.font = '400 13px Inter, sans-serif';
-                    ctx.fillText('Live preview appears here', 250, 246);
-                    return;
-                }
+        }
 
-                try {
-                    const idx = Math.min(state.selected, state.images.length - 1);
-                    const item = state.images[idx];
-                    const img = await loadImage(item.src);
-                    const full = state.full ? await loadImage(state.full.src) : null;
-                    const corner = state.corner ? await loadImage(state.corner.src) : null;
-                    const result = drawWatermarked(img, full, corner, 500);
+    }
 
-                    ctx.clearRect(0, 0, 500, 500);
-                    ctx.drawImage(result, 0, 0);
-                } catch (_) {
-                    // silent fail – preview will show nothing
-                }
-            }
 
-            // ── UI updates ──
-            function renderFiles() {
-                const container = $('fileList');
-                if (!state.images.length) {
-                    container.innerHTML = '';
-                    return;
-                }
-                container.innerHTML = state.images.map((item, i) =>
+    /* =========================
+       FILE LIST
+    ========================= */
+
+    function escapeHtml(value) {
+
+        return String(value)
+            .replace(
+                /[&<>'"]/g,
+                char => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[char])
+            );
+
+    }
+
+
+    function removeImageAt(index) {
+
+        if (state.busy)
+            return;
+
+        const removed = state.images[index];
+
+        if (!removed)
+            return;
+
+        state.images.splice(index, 1);
+
+        if (removed.src)
+            URL.revokeObjectURL(removed.src);
+
+        if (index < state.selected) {
+            state.selected--;
+        } else if (index === state.selected) {
+            state.selected = Math.min(index, state.images.length - 1);
+        }
+
+        state.selected = Math.max(0, state.selected);
+        updateUI();
+
+    }
+
+
+    function renderFiles() {
+
+        const container =
+            $('fileList');
+
+        if (!state.images.length) {
+
+            container.innerHTML = '';
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            state.images
+                .map((item, i) =>
+
                     `<span class="file-tag">
+
                         <i class="fas fa-file-image"></i>
-                        ${item.file.name}
-                        <span class="remove" data-index="${i}">×</span>
+
+                        ${escapeHtml(
+                            item.file.name
+                        )}
+
+                        <span
+                            class="remove"
+                            data-index="${i}"
+                        >×</span>
+
                     </span>`
-                ).join('');
 
-                container.querySelectorAll('.remove').forEach(el => {
-                    el.addEventListener('click', () => {
-                        const idx = Number(el.dataset.index);
-                        state.images.splice(idx, 1);
-                        if (state.selected >= state.images.length) {
-                            state.selected = Math.max(0, state.images.length - 1);
-                        }
-                        updateUI();
-                    });
-                });
-            }
+                )
+                .join('');
 
-            function renderThumbnails() {
-                const container = $('thumbnails');
-                if (!state.images.length) {
-                    container.innerHTML = '<div class="empty">Upload images to see previews.</div>';
-                    return;
-                }
 
-                container.innerHTML = state.images.map((item, i) => {
-                    const active = i === state.selected ? 'active' : '';
-                    return `<div class="thumbnail ${active}" data-index="${i}">
-                        <img src="${item.src}" alt="${item.file.name}" loading="lazy" />
-                        <span class="badge-num">${i + 1}</span>
-                    </div>`;
-                }).join('');
+        container
+            .querySelectorAll('.remove')
+            .forEach(el => {
 
-                container.querySelectorAll('.thumbnail').forEach(el => {
-                    el.addEventListener('click', () => {
-                        state.selected = Number(el.dataset.index);
+                el.addEventListener(
+                    'click',
+                    () => {
+
+                        removeImageAt(
+                            Number(el.dataset.index)
+                        );
+
+                    }
+                );
+
+            });
+
+    }
+
+
+    /* =========================
+       THUMBNAILS
+    ========================= */
+
+    function renderThumbnails() {
+
+        const container =
+            $('thumbnails');
+
+        if (!state.images.length) {
+
+            container.innerHTML =
+                `<div class="empty">
+                    Upload images to see previews.
+                </div>`;
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            state.images
+                .map((item, i) => {
+
+                    const active =
+                        i === state.selected
+                            ? 'active'
+                            : '';
+
+                    return `
+                        <div
+                            class="thumbnail ${active}"
+                            data-index="${i}"
+                        >
+
+                            <img
+                                src="${escapeHtml(
+                                    item.src
+                                )}"
+                                alt="${escapeHtml(
+                                    item.file.name
+                                )}"
+                                loading="lazy"
+                            />
+
+                            <span class="badge-num">
+                                ${i + 1}
+                            </span>
+
+                            <button
+                                class="thumbnail-remove"
+                                type="button"
+                                data-index="${i}"
+                                aria-label="Remove ${escapeHtml(item.file.name)}"
+                                title="Remove image"
+                                ${state.busy ? 'disabled' : ''}
+                            >
+                                <i class="fas fa-xmark"></i>
+                            </button>
+
+                        </div>
+                    `;
+
+                })
+                .join('');
+
+
+        container
+            .querySelectorAll('.thumbnail')
+            .forEach(el => {
+
+                const removeButton =
+                    el.querySelector('.thumbnail-remove');
+
+                removeButton.addEventListener(
+                    'click',
+                    event => {
+                        event.stopPropagation();
+                        removeImageAt(
+                            Number(removeButton.dataset.index)
+                        );
+                    }
+                );
+
+                el.addEventListener(
+                    'click',
+                    () => {
+
+                        state.selected =
+                            Number(
+                                el.dataset.index
+                            );
+
                         renderThumbnails();
-                        renderPreview();
-                    });
-                });
-            }
 
-            function updateUI() {
-                const count = state.images.length;
-                $('imageCount').textContent = count;
-                $('uploadedCount').textContent = count;
-                $('previewCount').textContent = count;
+                        requestPreview();
 
-                const btn = $('processButton');
-                btn.disabled = count === 0 || state.busy;
-                btn.innerHTML = count ?
-                    '<i class="fas fa-play"></i> Process & Download Images' :
-                    '<i class="fas fa-images"></i> Upload images first';
+                    }
+                );
 
-                $('clearAllBtn').disabled = count === 0;
+            });
 
-                renderFiles();
-                renderThumbnails();
-                renderPreview();
-            }
+    }
 
-            // ── clear all ──
-            function clearAllImages() {
-                if (!state.images.length) return;
-                if (state.busy) return;
-                if (!confirm('Remove all uploaded images?')) return;
-                state.images = [];
-                state.selected = 0;
-                updateUI();
-            }
 
-            // ── handle image upload ──
-            async function handleImages(files) {
-                if (!files || !files.length) return;
-                const valid = [...files].filter(f => f.type.startsWith('image/'));
-                if (!valid.length) {
-                    alert('No valid image files found.');
-                    return;
-                }
+    /* =========================
+       UI UPDATE
+    ========================= */
 
-                // avoid duplicates by name + size
-                const existing = new Set(state.images.map(i => `${i.file.name}|${i.file.size}`));
-                const newItems = [];
-                for (const file of valid) {
-                    const key = `${file.name}|${file.size}`;
-                    if (existing.has(key)) continue;
-                    const src = await readDataUrl(file);
-                    newItems.push({ file, src });
-                    existing.add(key);
-                }
+    function updateUI() {
 
-                if (!newItems.length) {
-                    alert('All selected files are already uploaded.');
-                    return;
-                }
+        const count =
+            state.images.length;
 
-                state.images.push(...newItems);
-                state.selected = state.images.length - 1;
-                updateUI();
-            }
+        $('imageCount').textContent =
+            count;
 
-            // ── handle watermark upload ──
-            async function handleWatermark(file, type) {
-                if (!file) {
-                    // clear
-                    state[type] = null;
-                    const status = $(`${type}Status`);
-                    status.textContent = 'No file selected';
-                    status.classList.add('empty');
-                    $(`${type}Preview`).innerHTML =
-                        `<i class="fas fa-${type === 'full' ? 'vector-square' : 'thumbtack'}"></i>`;
-                    $(`${type}Info`).textContent = 'Not set';
-                    renderPreview();
-                    return;
-                }
+        $('uploadedCount').textContent =
+            count;
 
-                if (file.type !== 'image/png') {
-                    alert('Please select a PNG file for the watermark.');
-                    return;
-                }
+        $('previewCount').textContent =
+            count;
 
-                const src = await readDataUrl(file);
-                const img = await loadImage(src);
 
-                state[type] = { file, src, image: img };
+        const btn =
+            $('processButton');
 
-                const status = $(`${type}Status`);
-                status.textContent = file.name;
-                status.classList.remove('empty');
+        btn.disabled =
+            count === 0 ||
+            state.busy;
 
-                const preview = $(`${type}Preview`);
-                preview.innerHTML = `<img src="${src}" alt="${type} watermark" />`;
-                $(`${type}Info`).textContent = `${img.width}×${img.height}`;
 
-                renderPreview();
-            }
+        btn.innerHTML =
+            count
+                ? `<i class="fas fa-download"></i>
+                   Download All Images`
+                : `<i class="fas fa-images"></i>
+                   Upload images first`;
 
-            // ── process ──
-            async function processImages() {
-                if (!state.images.length || state.busy) return;
+        const singleBtn =
+            $('singleProcessButton');
 
-                if (!state.full && !state.corner) {
-                    if (!confirm('No watermarks added. Continue with padding only?')) return;
-                }
+        singleBtn.disabled =
+            count === 0 || state.busy;
 
-                state.busy = true;
-                updateUI();
+        singleBtn.innerHTML =
+            count
+                ? `<i class="fas fa-download"></i>
+                   Download Current Image`
+                : `<i class="fas fa-download"></i>
+                   Upload an image first`;
 
-                const progress = $('progress');
-                progress.classList.add('visible');
-                const fill = $('progressFill');
-                const percent = $('progressPercent');
-                const status = $('progressStatus');
 
-                fill.style.width = '0%';
-                percent.textContent = '0%';
-                status.textContent = 'Starting…';
+        $('clearAllBtn').disabled =
+            count === 0 || state.busy;
 
-                const format = $('format').value;
-                const ext = {
-                    'image/png': 'png',
-                    'image/jpeg': 'jpg',
-                    'image/webp': 'webp',
-                    'image/bmp': 'bmp'
-                } [format] || 'png';
+        $('galleryClearBtn').disabled =
+            count === 0 || state.busy;
 
-                const total = state.images.length;
 
-                for (let i = 0; i < total; i++) {
-                    const item = state.images[i];
-                    status.textContent = `Processing ${i + 1}/${total}`;
-                    const pct = Math.round((i / total) * 100);
-                    fill.style.width = `${pct}%`;
-                    percent.textContent = `${pct}%`;
+        renderFiles();
+        renderThumbnails();
+        requestPreview();
 
-                    const img = await loadImage(item.src);
-                    const full = state.full ? state.full.image : null;
-                    const corner = state.corner ? state.corner.image : null;
+    }
 
-                    const result = drawWatermarked(img, full, corner, OUTPUT_SIZE);
 
-                    const blob = await new Promise(resolve =>
-                        result.toBlob(
-                            resolve,
-                            format,
-                            (format === 'image/png' || format === 'image/bmp') ? undefined : QUALITY
+    /* =========================
+       CLEAR ALL
+    ========================= */
+
+    function clearAllImages() {
+
+        if (!state.images.length)
+            return;
+
+        if (state.busy)
+            return;
+
+        if (
+            !confirm(
+                'Remove all uploaded images?'
+            )
+        )
+            return;
+
+
+        state.images.forEach(item => {
+
+            if (item.src)
+                URL.revokeObjectURL(
+                    item.src
+                );
+
+        });
+
+
+        state.images = [];
+        state.selected = 0;
+
+        updateUI();
+
+    }
+
+
+    /* =========================
+       IMAGE UPLOAD
+    ========================= */
+
+    async function handleImages(files) {
+
+        if (!files || !files.length)
+            return;
+
+
+        const valid =
+            Array.from(files)
+                .filter(
+                    file =>
+                        file &&
+                        file.type &&
+                        file.type.startsWith(
+                            'image/'
                         )
-                    );
+                );
 
-                    const base = item.file.name.replace(/\.[^.]+$/, '');
-                    const filename = `${base}_${String(i + 1).padStart(2, '0')}.${ext}`;
-                    saveAs(blob, filename);
 
-                    // small delay for UI breathing
-                    await new Promise(r => setTimeout(r, 80));
-                }
+        if (!valid.length) {
 
-                fill.style.width = '100%';
-                percent.textContent = '100%';
-                status.textContent = '✅ All images downloaded!';
+            alert(
+                'No valid image files found.'
+            );
 
-                state.busy = false;
-                updateUI();
+            return;
 
-                // auto-hide progress after 5s
-                setTimeout(() => {
-                    progress.classList.remove('visible');
-                }, 5000);
+        }
+
+
+        const existing =
+            new Set(
+                state.images.map(
+                    i =>
+                        `${i.file.name}|${i.file.size}`
+                )
+            );
+
+
+        const unique =
+            valid.filter(file => {
+
+                const key =
+                    `${file.name}|${file.size}`;
+
+                if (
+                    existing.has(key)
+                )
+                    return false;
+
+                existing.add(key);
+
+                return true;
+
+            });
+
+
+        if (!unique.length) {
+
+            alert(
+                'All selected files are already uploaded.'
+            );
+
+            return;
+
+        }
+
+
+        const newItems =
+            await Promise.all(
+                unique.map(
+                    async file => {
+
+                        const src =
+                            await readDataUrl(
+                                file
+                            );
+
+                        try {
+
+                            return {
+                                file,
+                                src,
+                                image:
+                                    await loadImage(
+                                        src
+                                    )
+                            };
+
+                        } catch (error) {
+
+                            URL.revokeObjectURL(
+                                src
+                            );
+
+                            throw error;
+
+                        }
+
+                    }
+                )
+            );
+
+
+        state.images.push(
+            ...newItems
+        );
+
+        state.selected =
+            state.images.length - 1;
+
+        updateUI();
+
+    }
+
+
+    /* =========================
+       WATERMARK UPLOAD
+    ========================= */
+
+    async function handleWatermark(
+        file,
+        type
+    ) {
+
+        if (!file) {
+
+            if (
+                state[type] &&
+                state[type].src
+            ) {
+
+                URL.revokeObjectURL(
+                    state[type].src
+                );
+
             }
 
-            // ── event bindings ──
+            state[type] = null;
 
-            // sliders
-            ['padding', 'opacity', 'cornerSize'].forEach(id => {
-                const el = $(id);
-                el.addEventListener('input', () => {
-                    $(`${id}Label`).textContent = `${el.value}%`;
-                    renderPreview();
-                });
-            });
+            const status =
+                $(`${type}Status`);
 
-            ['customX', 'customY'].forEach(id => {
-                const el = $(id);
-                el.addEventListener('input', () => {
-                    $(`${id}Label`).textContent = `${el.value}%`;
-                    renderPreview();
-                });
-            });
+            status.textContent =
+                'No file selected';
 
-            // position toggle
-            $('position').addEventListener('change', () => {
-                const custom = $('customPosition');
-                custom.classList.toggle('visible', $('position').value === 'custom');
-                renderPreview();
-            });
+            status.classList.add(
+                'empty'
+            );
 
-            // process
-            $('processButton').addEventListener('click', processImages);
 
-            // clear all
-            $('clearAllBtn').addEventListener('click', clearAllImages);
+            $(`${type}Preview`)
+                .innerHTML =
+                    `<i class="fas fa-${
+                        type === 'full'
+                            ? 'vector-square'
+                            : 'thumbtack'
+                    }"></i>`;
 
-            // image upload
-            $('imageInput').addEventListener('change', e => {
-                handleImages(e.target.files);
-                e.target.value = '';
-            });
 
-            // watermark uploads
-            $('fullInput').addEventListener('change', e => {
-                handleWatermark(e.target.files[0], 'full');
-                e.target.value = '';
-            });
+            $(`${type}Info`)
+                .textContent =
+                'Not set';
 
-            $('cornerInput').addEventListener('change', e => {
-                handleWatermark(e.target.files[0], 'corner');
-                e.target.value = '';
-            });
 
-            // drag & drop
-            const drop = $('imageDrop');
-            drop.addEventListener('dragover', e => {
-                e.preventDefault();
-                drop.classList.add('dragover');
-            });
-            drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
-            drop.addEventListener('drop', e => {
-                e.preventDefault();
-                drop.classList.remove('dragover');
-                handleImages(e.dataTransfer.files);
-            });
+            requestPreview();
 
-            // ── init ──
-            // set initial custom position visibility
-            if ($('position').value === 'custom') {
-                $('customPosition').classList.add('visible');
+            return;
+
+        }
+
+
+        if (
+            file.type !==
+            'image/png'
+        ) {
+
+            alert(
+                'Please select a PNG file for the watermark.'
+            );
+
+            return;
+
+        }
+
+
+        if (
+            state[type] &&
+            state[type].src
+        ) {
+
+            URL.revokeObjectURL(
+                state[type].src
+            );
+
+        }
+
+
+        const src =
+            await readDataUrl(file);
+
+        const img =
+            await loadImage(src);
+
+
+        state[type] = {
+            file,
+            src,
+            image: img
+        };
+
+
+        const status =
+            $(`${type}Status`);
+
+        status.textContent =
+            file.name;
+
+        status.classList.remove(
+            'empty'
+        );
+
+
+        const preview =
+            $(`${type}Preview`);
+
+        preview.innerHTML =
+            `<img
+                src="${src}"
+                alt="${type} watermark"
+            />`;
+
+
+        $(`${type}Info`)
+            .textContent =
+            `${img.width}×${img.height}`;
+
+
+        requestPreview();
+
+    }
+
+
+    /* =========================
+       PROCESS
+    ========================= */
+
+    async function createDownload(item, index) {
+        const img = item.image || (item.image = await loadImage(item.src));
+
+        const result = drawWatermarked(
+            img,
+            state.full ? state.full.image : null,
+            state.corner ? state.corner.image : null,
+            OUTPUT_SIZE
+        );
+
+        const format = $('format').value;
+
+        const blob = await new Promise((resolve, reject) => {
+            result.toBlob(
+                encoded => {
+                    if (encoded) resolve(encoded);
+                    else reject(new Error('The image could not be encoded.'));
+                },
+                format,
+                format === 'image/png' ? undefined : QUALITY
+            );
+        });
+
+        const ext = {
+            'image/png': 'png',
+            'image/jpeg': 'jpg',
+            'image/webp': 'webp'
+        }[format] || 'png';
+
+        const base = (
+            item.file.name.replace(/\.[^.]+$/, '') || `image_${index + 1}`
+        ).replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
+
+        saveAs(
+            blob,
+            `${base}_${String(index + 1).padStart(2, '0')}.${ext}`
+        );
+    }
+
+
+    async function processSingleImage() {
+        if (!state.images.length || state.busy) return;
+
+        state.busy = true;
+        updateUI();
+
+        const progress = $('progress');
+        const fill = $('progressFill');
+        const percent = $('progressPercent');
+        const status = $('progressStatus');
+
+        progress.classList.add('visible');
+        fill.style.width = '10%';
+        percent.textContent = '10%';
+        status.textContent = 'Processing current image…';
+
+        try {
+            const item = state.images[state.selected];
+
+            if (!item) {
+                throw new Error('Please select an image first.');
             }
 
+            await createDownload(item, state.selected);
+
+            fill.style.width = '100%';
+            percent.textContent = '100%';
+            status.textContent = '✓ Current image downloaded!';
+        } finally {
+            state.busy = false;
             updateUI();
 
-        })();
-    </script>
+            setTimeout(() => {
+                progress.classList.remove('visible');
+            }, 4000);
+        }
+    }
+
+
+    async function processImages() {
+        if (!state.images.length || state.busy) return;
+
+        if (!state.full && !state.corner) {
+            if (!confirm('No watermarks added. Continue with padding only?')) {
+                return;
+            }
+        }
+
+        if (typeof JSZip === 'undefined') {
+            throw new Error('Bulk download library could not be loaded. Please refresh the page and try again.');
+        }
+
+        state.busy = true;
+        updateUI();
+
+        const progress = $('progress');
+        const fill = $('progressFill');
+        const percent = $('progressPercent');
+        const status = $('progressStatus');
+
+        progress.classList.add('visible');
+        fill.style.width = '0%';
+        percent.textContent = '0%';
+        status.textContent = 'Preparing ZIP…';
+
+        try {
+            const format = $('format').value;
+            const ext = {
+                'image/png': 'png',
+                'image/jpeg': 'jpg',
+                'image/webp': 'webp'
+            }[format] || 'png';
+
+            const zip = new JSZip();
+            const usedNames = new Set();
+            const total = state.images.length;
+
+            for (let i = 0; i < total; i++) {
+                const item = state.images[i];
+
+                status.textContent = `Processing ${i + 1}/${total}…`;
+
+                // Yield to the browser so the progress UI stays responsive.
+                await new Promise(resolve => setTimeout(resolve, 0));
+
+                const img = item.image || (item.image = await loadImage(item.src));
+                const full = state.full ? state.full.image : null;
+                const corner = state.corner ? state.corner.image : null;
+
+                const result = drawWatermarked(
+                    img,
+                    full,
+                    corner,
+                    OUTPUT_SIZE
+                );
+
+                const blob = await new Promise((resolve, reject) => {
+                    result.toBlob(
+                        encoded => {
+                            if (encoded) resolve(encoded);
+                            else reject(new Error(`Could not encode image ${i + 1}.`));
+                        },
+                        format,
+                        format === 'image/png' ? undefined : QUALITY
+                    );
+                });
+
+                const base = (
+                    item.file.name.replace(/\.[^.]+$/, '') || `image_${i + 1}`
+                ).replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
+
+                let filename = `${base}_${String(i + 1).padStart(2, '0')}.${ext}`;
+
+                // Prevent duplicate filenames inside the ZIP.
+                if (usedNames.has(filename)) {
+                    let n = 2;
+                    const nameWithoutExt = filename.slice(0, -(ext.length + 1));
+                    do {
+                        filename = `${nameWithoutExt}_${n}.${ext}`;
+                        n++;
+                    } while (usedNames.has(filename));
+                }
+                usedNames.add(filename);
+
+                // STORE avoids unnecessary recompression of already encoded images.
+                zip.file(filename, blob, { compression: 'STORE' });
+
+                const pct = Math.round(((i + 1) / total) * 90);
+                fill.style.width = `${pct}%`;
+                percent.textContent = `${pct}%`;
+            }
+
+            status.textContent = 'Creating ZIP…';
+            fill.style.width = '94%';
+            percent.textContent = '94%';
+
+            const zipBlob = await zip.generateAsync(
+                {
+                    type: 'blob',
+                    compression: 'STORE',
+                    mimeType: 'application/zip'
+                },
+                metadata => {
+                    const pct = 94 + Math.round((metadata.percent / 100) * 6);
+                    fill.style.width = `${Math.min(100, pct)}%`;
+                    percent.textContent = `${Math.min(100, pct)}%`;
+                    status.textContent = 'Finalizing ZIP…';
+                }
+            );
+
+            saveAs(zipBlob, `watermarked_images_${new Date().toISOString().slice(0, 10)}.zip`);
+
+            fill.style.width = '100%';
+            percent.textContent = '100%';
+            status.textContent = `✓ ${total} image${total === 1 ? '' : 's'} downloaded as ZIP`;
+        } finally {
+            state.busy = false;
+            updateUI();
+
+            // Keep the result visible long enough for the user to see it.
+            setTimeout(() => {
+                progress.classList.remove('visible');
+            }, 5000);
+        }
+    }
+
+    /* =========================
+       EVENTS
+    ========================= */
+
+    [
+        'padding',
+        'opacity',
+        'cornerSize',
+        'cornerOpacity'
+    ].forEach(id => {
+
+        const el = $(id);
+
+        el.addEventListener(
+            'input',
+            () => {
+
+                $(`${id}Label`)
+                    .textContent =
+                    `${el.value}%`;
+
+                requestPreview();
+
+            }
+        );
+
+    });
+
+
+    [
+        'customX',
+        'customY'
+    ].forEach(id => {
+
+        const el = $(id);
+
+        el.addEventListener(
+            'input',
+            () => {
+
+                $(`${id}Label`)
+                    .textContent =
+                    `${el.value}%`;
+
+                requestPreview();
+
+            }
+        );
+
+    });
+
+
+    $('position')
+        .addEventListener(
+            'change',
+            () => {
+
+                $('customPosition')
+                    .classList.toggle(
+                        'visible',
+                        $('position').value ===
+                        'custom'
+                    );
+
+                requestPreview();
+
+            }
+        );
+
+
+    $('processButton')
+        .addEventListener(
+            'click',
+            async () => {
+
+                try {
+
+                    await processImages();
+
+                } catch (error) {
+
+                    state.busy = false;
+
+                    updateUI();
+
+                    $('progress')
+                        .classList.add(
+                            'visible'
+                        );
+
+                    $('progressStatus')
+                        .textContent =
+                        `Error: ${
+                            error.message ||
+                            'Processing failed'
+                        }`;
+
+                    $('progressPercent')
+                        .textContent =
+                        'Error';
+
+                }
+
+            }
+        );
+
+
+    $('singleProcessButton')
+        .addEventListener(
+            'click',
+            async () => {
+
+                try {
+                    await processSingleImage();
+                } catch (error) {
+                    state.busy = false;
+                    updateUI();
+                    $('progress').classList.add('visible');
+                    $('progressStatus').textContent =
+                        `Error: ${error.message || 'Download failed'}`;
+                    $('progressPercent').textContent = 'Error';
+                }
+
+            }
+        );
+
+
+    $('clearAllBtn')
+        .addEventListener(
+            'click',
+            clearAllImages
+        );
+
+    $('galleryClearBtn')
+        .addEventListener(
+            'click',
+            clearAllImages
+        );
+
+
+    $('imageInput')
+        .addEventListener(
+            'change',
+            e => {
+
+                handleImages(
+                    e.target.files
+                ).catch(
+                    error =>
+                        alert(
+                            error.message ||
+                            'Could not load the selected images.'
+                        )
+                );
+
+                e.target.value = '';
+
+            }
+        );
+
+
+    $('fullInput')
+        .addEventListener(
+            'change',
+            e => {
+
+                handleWatermark(
+                    e.target.files[0],
+                    'full'
+                ).catch(
+                    error =>
+                        alert(
+                            error.message ||
+                            'Could not load the watermark.'
+                        )
+                );
+
+                e.target.value = '';
+
+            }
+        );
+
+
+    $('cornerInput')
+        .addEventListener(
+            'change',
+            e => {
+
+                handleWatermark(
+                    e.target.files[0],
+                    'corner'
+                ).catch(
+                    error =>
+                        alert(
+                            error.message ||
+                            'Could not load the watermark.'
+                        )
+                );
+
+                e.target.value = '';
+
+            }
+        );
+
+
+    /* =========================
+       DRAG & DROP
+    ========================= */
+
+    const drop =
+        $('imageDrop');
+
+
+    drop.addEventListener(
+        'dragover',
+        e => {
+
+            e.preventDefault();
+
+            drop.classList.add(
+                'dragover'
+            );
+
+        }
+    );
+
+
+    drop.addEventListener(
+        'dragleave',
+        () => {
+
+            drop.classList.remove(
+                'dragover'
+            );
+
+        }
+    );
+
+
+    drop.addEventListener(
+        'drop',
+        e => {
+
+            e.preventDefault();
+
+            drop.classList.remove(
+                'dragover'
+            );
+
+            handleImages(
+                e.dataTransfer.files
+            ).catch(
+                error =>
+                    alert(
+                        error.message ||
+                        'Could not load the dropped images.'
+                    )
+            );
+
+        }
+    );
+
+
+    /* =========================
+       INIT
+    ========================= */
+
+    updateUI();
+
+})();
+
+</script>
+
 </body>
 </html>
